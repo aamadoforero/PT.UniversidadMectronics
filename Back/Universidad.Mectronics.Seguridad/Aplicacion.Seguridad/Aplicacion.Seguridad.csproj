@@ -1,13 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.2.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.14" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Dominio.Seguridad\Dominio.Seguridad.csproj" />
+    <ProjectReference Include="..\..\Universidad.Mectronics.Transversal\Universidad.Mectronics.Transversal.csproj" />
   </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Genera el XML de documentación; el compilador advierte (CS1591) sobre miembros públicos sin documentar. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Aplica al compilar las convenciones de Back/.editorconfig (por ejemplo, prohibir var). -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
-
 </Project>

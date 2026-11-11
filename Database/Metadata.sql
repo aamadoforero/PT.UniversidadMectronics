@@ -1,126 +1,153 @@
+/* =====================================================================
+   Universidad Mectronics - Metadata
+   Documenta tablas y columnas con la propiedad extendida MS_Description.
+   Ejecutar después de DDL.sql. Es idempotente.
+   ===================================================================== */
+
 USE UniversidadMectronics;
 GO
 
-CREATE OR ALTER PROCEDURE sp_DocumentarTabla
+CREATE OR ALTER PROCEDURE dbo.sp_DocumentarTabla
     @SchemaName SYSNAME,
-    @TableName SYSNAME,
+    @TableName  SYSNAME,
     @ColumnName SYSNAME = NULL,
-    @Value NVARCHAR(4000)
+    @Value      NVARCHAR(4000)
 AS
 BEGIN
+    SET NOCOUNT ON;
+
     IF @ColumnName IS NULL
     BEGIN
-        IF EXISTS (SELECT * FROM sys.extended_properties ep JOIN sys.tables t ON ep.major_id = t.object_id JOIN sys.schemas s ON t.schema_id = s.schema_id WHERE s.name = @SchemaName AND t.name = @TableName AND ep.minor_id = 0 AND ep.name = 'MS_Description')
-            EXEC sys.sp_dropextendedproperty @name=N'MS_Description', @level0type=N'SCHEMA', @level0name=@SchemaName, @level1type=N'TABLE', @level1name=@TableName;
-        
-        EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@Value, @level0type=N'SCHEMA', @level0name=@SchemaName, @level1type=N'TABLE', @level1name=@TableName;
+        IF EXISTS (
+            SELECT 1
+            FROM sys.extended_properties ep
+            JOIN sys.tables t  ON ep.major_id = t.object_id
+            JOIN sys.schemas s ON t.schema_id = s.schema_id
+            WHERE s.name = @SchemaName AND t.name = @TableName AND ep.minor_id = 0 AND ep.name = N'MS_Description')
+            EXEC sys.sp_dropextendedproperty @name = N'MS_Description',
+                @level0type = N'SCHEMA', @level0name = @SchemaName,
+                @level1type = N'TABLE',  @level1name = @TableName;
+
+        EXEC sys.sp_addextendedproperty @name = N'MS_Description', @value = @Value,
+            @level0type = N'SCHEMA', @level0name = @SchemaName,
+            @level1type = N'TABLE',  @level1name = @TableName;
     END
     ELSE
     BEGIN
-        IF EXISTS (SELECT * FROM sys.extended_properties ep JOIN sys.columns c ON ep.major_id = c.object_id AND ep.minor_id = c.column_id JOIN sys.tables t ON c.object_id = t.object_id JOIN sys.schemas s ON t.schema_id = s.schema_id WHERE s.name = @SchemaName AND t.name = @TableName AND c.name = @ColumnName AND ep.name = 'MS_Description')
-            EXEC sys.sp_dropextendedproperty @name=N'MS_Description', @level0type=N'SCHEMA', @level0name=@SchemaName, @level1type=N'TABLE', @level1name=@TableName, @level2type=N'COLUMN', @level2name=@ColumnName;
-        
-        EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=@Value, @level0type=N'SCHEMA', @level0name=@SchemaName, @level1type=N'TABLE', @level1name=@TableName, @level2type=N'COLUMN', @level2name=@ColumnName;
+        IF EXISTS (
+            SELECT 1
+            FROM sys.extended_properties ep
+            JOIN sys.columns c ON ep.major_id = c.object_id AND ep.minor_id = c.column_id
+            JOIN sys.tables t  ON c.object_id = t.object_id
+            JOIN sys.schemas s ON t.schema_id = s.schema_id
+            WHERE s.name = @SchemaName AND t.name = @TableName AND c.name = @ColumnName AND ep.name = N'MS_Description')
+            EXEC sys.sp_dropextendedproperty @name = N'MS_Description',
+                @level0type = N'SCHEMA', @level0name = @SchemaName,
+                @level1type = N'TABLE',  @level1name = @TableName,
+                @level2type = N'COLUMN', @level2name = @ColumnName;
+
+        EXEC sys.sp_addextendedproperty @name = N'MS_Description', @value = @Value,
+            @level0type = N'SCHEMA', @level0name = @SchemaName,
+            @level1type = N'TABLE',  @level1name = @TableName,
+            @level2type = N'COLUMN', @level2name = @ColumnName;
     END
 END
 GO
 
-- Autenticación
-EXEC sp_DocumentarTabla 'Autenticacion', 'Rol', NULL, 'Catálogo de roles de autorización del sistema.';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Rol', 'Id', 'Identificador único del rol (PK).';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Rol', 'Nombre', 'Nombre descriptivo del rol.';
+-- Seguridad
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Rol', NULL, N'Roles de autorización. Cada usuario tiene un único rol. Lo que puede hacer lo definen sus permisos (Seguridad.RolPermiso) y los datos académicos que exige, su TipoPerfil.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Rol', 'Id', N'Identificador único del rol (PK).';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Rol', 'Nombre', N'Nombre único del rol. El código no depende de él.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Rol', 'TipoPerfil', N'Datos académicos que exige el rol: 0 = Ninguno, 1 = Estudiante (Academico.Estudiante), 2 = Profesor (Academico.Profesor). No debe cambiarse si el rol ya tiene usuarios.';
 
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', NULL, 'Tabla central de credenciales de acceso unificadas.';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'Id', 'Identificador único del usuario (PK).';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'NombreCompleto', 'Nombre completo legal.';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'Identificacion', 'Número de documento de identidad único.';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'Email', 'Correo electrónico institucional único para login.';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'PasswordHash', 'Contraseña cifrada mediante hash seguro.';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'RoleId', 'Relación con el rol asignado (FK).';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'Activo', 'Estado de la cuenta (1 = Activo, 0 = Inactivo).';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'FechaCreacion', 'Fecha de creación del registro.';
-EXEC sp_DocumentarTabla 'Autenticacion', 'Usuario', 'FechaModificacion', 'Fecha de última modificación.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Permiso', NULL, N'Catálogo de permisos. Cada permiso habilita una funcionalidad y su código está definido en el código del microservicio que la implementa.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Permiso', 'Id', N'Identificador único del permiso (PK).';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Permiso', 'Codigo', N'Código único del permiso (por ejemplo, usuarios.crear). Viaja en el token de acceso.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Permiso', 'Descripcion', N'Descripción de la funcionalidad que habilita el permiso.';
 
--- Académico
-EXEC sp_DocumentarTabla 'Academico', 'Nivel', NULL, 'Catálogo de niveles académicos (Técnico, Tecnólogo, Profesional).';
-EXEC sp_DocumentarTabla 'Academico', 'Nivel', 'Id', 'Identificador único del nivel (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'Nivel', 'Nombre', 'Nombre del nivel educativo.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'RolPermiso', NULL, N'Asignación de permisos a roles (relación muchos a muchos). Configurable sin cambiar código.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'RolPermiso', 'RolId', N'Rol que recibe el permiso (FK a Seguridad.Rol, parte de la PK).';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'RolPermiso', 'PermisoId', N'Permiso asignado (FK a Seguridad.Permiso, parte de la PK).';
 
-EXEC sp_DocumentarTabla 'Academico', 'Programa', NULL, 'Programas académicos ofrecidos por la universidad.';
-EXEC sp_DocumentarTabla 'Academico', 'Programa', 'Id', 'Identificador único del programa (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'Programa', 'Nombre', 'Nombre del programa.';
-EXEC sp_DocumentarTabla 'Academico', 'Programa', 'Activo', 'Estado del programa.';
-EXEC sp_DocumentarTabla 'Academico', 'Programa', 'NivelId', 'Relación con el nivel académico (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'Programa', 'FechaCreacion', 'Fecha de creación del registro.';
-EXEC sp_DocumentarTabla 'Academico', 'Programa', 'FechaModificacion', 'Fecha de última modificación.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', NULL, N'Cuentas con acceso al sistema. Solo las crean usuarios con el permiso usuarios.crear.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'Id', N'Identificador único del usuario (PK).';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'NombreCompleto', N'Nombre completo legal. Es el único dato visible para los compañeros de clase.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'Identificacion', N'Número de documento de identidad único.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'Email', N'Correo electrónico institucional único para iniciar sesión.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'Contrasena', N'Hash de la contraseña (PasswordHasher de ASP.NET Core, PBKDF2-HMAC-SHA512).';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'RoleId', N'Rol asignado (FK a Seguridad.Rol).';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'Activo', N'Estado de la cuenta (1 = Activa, 0 = Inactiva).';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'DebeCambiarContrasena', N'Indica que la contraseña es temporal y debe cambiarse antes de usar el sistema.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'IntentosInicioFallidos', N'Intentos fallidos desde el último inicio válido o desde que venció el bloqueo.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'BloqueoHasta', N'Fecha y hora (UTC) hasta la que se rechazan nuevos inicios de sesión.';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'FechaCreacion', N'Fecha de creación del registro (UTC).';
+EXEC dbo.sp_DocumentarTabla 'Seguridad', 'Usuario', 'FechaModificacion', N'Fecha de la última modificación (UTC).';
 
-EXEC sp_DocumentarTabla 'Academico', 'CategoriaProfesor', NULL, 'Catálogo de categorías para los docentes.';
-EXEC sp_DocumentarTabla 'Academico', 'CategoriaProfesor', 'Id', 'Identificador único de categoría (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'CategoriaProfesor', 'Nombre', 'Nombre de la categoría.';
-EXEC sp_DocumentarTabla 'Academico', 'CategoriaProfesor', 'Activo', 'Estado de la categoría.';
-EXEC sp_DocumentarTabla 'Academico', 'CategoriaProfesor', 'FechaCreacion', 'Fecha de creación del registro.';
-EXEC sp_DocumentarTabla 'Academico', 'CategoriaProfesor', 'FechaModificacion', 'Fecha de última modificación.';
+-- Academico: catálogos
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Nivel', NULL, N'Catálogo de niveles académicos (Técnico, Tecnólogo, Profesional).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Nivel', 'Id', N'Identificador único del nivel (PK).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Nivel', 'Nombre', N'Nombre único del nivel académico.';
 
-EXEC sp_DocumentarTabla 'Academico', 'Estudiante', NULL, 'Perfil extendido para los alumnos de la institución.';
-EXEC sp_DocumentarTabla 'Academico', 'Estudiante', 'Id', 'Identificador único del estudiante (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'Estudiante', 'UsuarioId', 'Relación 1 a 1 con la tabla Usuario (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'Estudiante', 'UbicacionSemestral', 'Semestre actual cursado (Rango estricto del 1 al 10).';
-EXEC sp_DocumentarTabla 'Academico', 'Estudiante', 'FechaCreacion', 'Fecha de creación del registro.';
-EXEC sp_DocumentarTabla 'Academico', 'Estudiante', 'FechaModificacion', 'Fecha de última modificación.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Programa', NULL, N'Programas académicos de créditos ofrecidos por la universidad.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Programa', 'Id', N'Identificador único del programa (PK).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Programa', 'Nombre', N'Nombre único del programa.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Programa', 'NivelId', N'Nivel académico del programa (FK a Academico.Nivel).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Programa', 'Activo', N'Estado del programa (1 = Activo, 0 = Inactivo).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Programa', 'FechaCreacion', N'Fecha de creación del registro (UTC).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Programa', 'FechaModificacion', N'Fecha de la última modificación (UTC).';
 
-EXEC sp_DocumentarTabla 'Academico', 'Profesor', NULL, 'Personal docente de la facultad.';
-EXEC sp_DocumentarTabla 'Academico', 'Profesor', 'Id', 'Identificador único del profesor (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'Profesor', 'UsuarioId', 'Relación opcional 1 a 1 con Usuario (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'Profesor', 'CategoriaId', 'Relación con la categoría del profesor (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'Profesor', 'Activo', 'Estado operativo del profesor.';
-EXEC sp_DocumentarTabla 'Academico', 'Profesor', 'FechaCreacion', 'Fecha de creación del registro.';
-EXEC sp_DocumentarTabla 'Academico', 'Profesor', 'FechaModificacion', 'Fecha de última modificación.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'CategoriaProfesor', NULL, N'Catálogo de categorías de vinculación docente (Planta, Cátedra, Ocasional).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'CategoriaProfesor', 'Id', N'Identificador único de la categoría (PK).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'CategoriaProfesor', 'Nombre', N'Nombre único de la categoría.';
 
-EXEC sp_DocumentarTabla 'Academico', 'ProgramaEstudiante', NULL, 'Relación de matrícula de estudiantes por programa.';
-EXEC sp_DocumentarTabla 'Academico', 'ProgramaEstudiante', 'Id', 'Identificador único (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'ProgramaEstudiante', 'EstudianteId', 'Estudiante matriculado (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'ProgramaEstudiante', 'ProgramaId', 'Programa académico (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'ProgramaEstudiante', 'FechaCreacion', 'Fecha de creación del registro.';
-EXEC sp_DocumentarTabla 'Academico', 'ProgramaEstudiante', 'FechaModificacion', 'Fecha de última modificación.';
+-- Academico: perfiles por rol
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Estudiante', NULL, N'Perfil académico de los usuarios con rol Estudiante. Un estudiante pertenece a un único programa.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Estudiante', 'Id', N'Identificador único del estudiante (PK).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Estudiante', 'UsuarioId', N'Cuenta asociada (FK única a Seguridad.Usuario, relación 1 a 1).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Estudiante', 'ProgramaId', N'Programa en el que está matriculado (FK a Academico.Programa).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Estudiante', 'UbicacionSemestral', N'Semestre que cursa actualmente (entre 1 y 10).';
 
-EXEC sp_DocumentarTabla 'Academico', 'Materia', NULL, 'Catálogo general de asignaturas.';
-EXEC sp_DocumentarTabla 'Academico', 'Materia', 'Id', 'Identificador único de la materia (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'Materia', 'Nombre', 'Nombre de la asignatura.';
-EXEC sp_DocumentarTabla 'Academico', 'Materia', 'Creditos', 'Valor académico (por defecto 3 créditos).';
-EXEC sp_DocumentarTabla 'Academico', 'Materia', 'Activo', 'Estado de la materia.';
-EXEC sp_DocumentarTabla 'Academico', 'Materia', 'FechaCreacion', 'Fecha de creación del registro.';
-EXEC sp_DocumentarTabla 'Academico', 'Materia', 'FechaModificacion', 'Fecha de última modificación.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Profesor', NULL, N'Perfil académico de los usuarios con rol Profesor.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Profesor', 'Id', N'Identificador único del profesor (PK).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Profesor', 'UsuarioId', N'Cuenta asociada (FK única y obligatoria a Seguridad.Usuario, relación 1 a 1).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Profesor', 'CategoriaId', N'Categoría de vinculación (FK a Academico.CategoriaProfesor).';
 
-EXEC sp_DocumentarTabla 'Academico', 'MateriaPrograma', NULL, 'Oferta académica que vincula materia, programa y profesor.';
-EXEC sp_DocumentarTabla 'Academico', 'MateriaPrograma', 'Id', 'Identificador único (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'MateriaPrograma', 'MateriaId', 'Asignatura ofertada (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'MateriaPrograma', 'ProgramaId', 'Programa al que pertenece (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'MateriaPrograma', 'ProfesorId', 'Docente titular asignado (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'MateriaPrograma', 'FechaCreacion', 'Fecha de creación del registro.';
-EXEC sp_DocumentarTabla 'Academico', 'MateriaPrograma', 'FechaModificacion', 'Fecha de última modificación.';
+-- Academico: materias e inscripciones
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', NULL, N'Asignaturas de un programa. Cada materia la dicta un profesor y cada profesor dicta como máximo 2 materias (regla validada en la aplicación).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Id', N'Identificador único de la materia (PK).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Nombre', N'Nombre de la asignatura, único dentro del programa.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Creditos', N'Créditos académicos de la materia (por defecto 3).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'ProgramaId', N'Programa al que pertenece la materia (FK a Academico.Programa).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'ProfesorId', N'Profesor que dicta la materia (FK a Academico.Profesor).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Activo', N'Estado de la materia (1 = Disponible para inscripción, 0 = Inactiva).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'FechaCreacion', N'Fecha de creación del registro (UTC).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'FechaModificacion', N'Fecha de la última modificación (UTC).';
 
-EXEC sp_DocumentarTabla 'Academico', 'Inscripcion', NULL, 'Matrícula de los estudiantes en las materias ofertadas.';
-EXEC sp_DocumentarTabla 'Academico', 'Inscripcion', 'Id', 'Identificador único de la inscripción (PK).';
-EXEC sp_DocumentarTabla 'Academico', 'Inscripcion', 'EstudianteId', 'Alumno que se inscribe (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'Inscripcion', 'MateriaProgramaId', 'Oferta de materia seleccionada (FK).';
-EXEC sp_DocumentarTabla 'Academico', 'Inscripcion', 'FechaInscripcion', 'Fecha y hora exacta de la matrícula.';
-EXEC sp_DocumentarTabla 'Academico', 'Inscripcion', 'Activo', 'Estado de la inscripción (Permite borrado lógico).';
-EXEC sp_DocumentarTabla 'Academico', 'Inscripcion', 'FechaModificacion', 'Fecha de última modificación.';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Inscripcion', NULL, N'Inscripción de un estudiante en una materia. Máximo 3 activas por estudiante y sin repetir profesor (reglas validadas en la aplicación).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Inscripcion', 'Id', N'Identificador único de la inscripción (PK).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Inscripcion', 'EstudianteId', N'Estudiante que se inscribe (FK a Academico.Estudiante).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Inscripcion', 'MateriaId', N'Materia inscrita (FK a Academico.Materia).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Inscripcion', 'Activo', N'Estado de la inscripción (1 = Vigente, 0 = Cancelada; borrado lógico).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Inscripcion', 'FechaInscripcion', N'Fecha y hora de la inscripción (UTC).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Inscripcion', 'FechaModificacion', N'Fecha de la última modificación, por ejemplo la cancelación (UTC).';
 
 -- Logs
-EXEC sp_DocumentarTabla 'Logs', 'TipoEvento', NULL, 'Catálogo de severidad de Logs (Informativo, Error, Warning).';
-EXEC sp_DocumentarTabla 'Logs', 'TipoEvento', 'Id', 'Identificador único (PK).';
-EXEC sp_DocumentarTabla 'Logs', 'TipoEvento', 'Nombre', 'Nombre de la severidad.';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'TipoEvento', NULL, N'Catálogo de severidad de los eventos (Informativo, Advertencia, Error).';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'TipoEvento', 'Id', N'Identificador único (PK).';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'TipoEvento', 'Nombre', N'Nombre único de la severidad.';
 
-EXEC sp_DocumentarTabla 'Logs', 'Aplicacion', NULL, 'Catálogo de microservicios o componentes emisores.';
-EXEC sp_DocumentarTabla 'Logs', 'Aplicacion', 'Id', 'Identificador único (PK).';
-EXEC sp_DocumentarTabla 'Logs', 'Aplicacion', 'Nombre', 'Nombre del componente.';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'Aplicacion', NULL, N'Catálogo de microservicios o componentes que emiten eventos.';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'Aplicacion', 'Id', N'Identificador único (PK).';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'Aplicacion', 'Nombre', N'Nombre único del componente.';
 
-EXEC sp_DocumentarTabla 'Logs', 'RegistroEvento', NULL, 'Almacén centralizado de trazas técnicas y de negocio.';
-EXEC sp_DocumentarTabla 'Logs', 'RegistroEvento', 'Id', 'Identificador único (PK).';
-EXEC sp_DocumentarTabla 'Logs', 'RegistroEvento', 'FechaEvento', 'Timestamp del suceso.';
-EXEC sp_DocumentarTabla 'Logs', 'RegistroEvento', 'TipoEventoId', 'Nivel de severidad (FK).';
-EXEC sp_DocumentarTabla 'Logs', 'RegistroEvento', 'AplicacionId', 'Componente emisor (FK).';
-EXEC sp_DocumentarTabla 'Logs', 'RegistroEvento', 'Mensaje', 'Descripción del evento.';
-EXEC sp_DocumentarTabla 'Logs', 'RegistroEvento', 'Excepcion', 'Detalle técnico de la excepción (Stack Trace).';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'RegistroEvento', NULL, N'Almacén centralizado de eventos técnicos y de negocio.';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'RegistroEvento', 'Id', N'Identificador único (PK).';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'RegistroEvento', 'FechaEvento', N'Fecha y hora del evento (UTC).';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'RegistroEvento', 'TipoEventoId', N'Severidad del evento (FK a Logs.TipoEvento).';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'RegistroEvento', 'AplicacionId', N'Componente emisor (FK a Logs.Aplicacion).';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'RegistroEvento', 'Mensaje', N'Descripción del evento.';
+EXEC dbo.sp_DocumentarTabla 'Logs', 'RegistroEvento', 'Excepcion', N'Detalle técnico de la excepción (stack trace).';
+GO
+
+PRINT 'Metadata finalizada.';
 GO

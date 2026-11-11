@@ -1,0 +1,30 @@
+# .NET: resultados de compilación y restauración
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+
+# Visual Studio y Rider
+.vs/
+.idea/
+
+# Pruebas y cobertura
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Front (React / Vite)
+node_modules/
+dist/
+*.local
+
+# Variables de entorno con secretos (solo se versiona el ejemplo)
+.env
+.env.*
+!.env.example
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

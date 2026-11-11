@@ -4,4 +4,5 @@
   <Project Path="Aplicacion.Seguridad/Aplicacion.Seguridad.csproj" />
   <Project Path="Dominio.Seguridad/Dominio.Seguridad.csproj" />
   <Project Path="Infraestructura.Seguridad/Infraestructura.Seguridad.csproj" />
+  <Project Path="PruebasUnitarias.Seguridad/PruebasUnitarias.Seguridad.csproj" />
 </Solution>

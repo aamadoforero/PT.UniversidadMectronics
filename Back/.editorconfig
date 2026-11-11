@@ -1,0 +1,9 @@
+# Convenciones de código del backend. Se aplican al compilar gracias a EnforceCodeStyleInBuild en cada proyecto.
+root = true
+
+[*.cs]
+# Tipado explícito: no se usa var en ningún caso.
+csharp_style_var_for_built_in_types = false:warning
+csharp_style_var_when_type_is_apparent = false:warning
+csharp_style_var_elsewhere = false:warning
+dotnet_diagnostic.IDE0008.severity = warning
