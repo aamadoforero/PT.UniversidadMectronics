@@ -1,126 +1,180 @@
-# Universidad.Mectronics.Seguridad
+# Universidad Mectronics
 
-Microservicio de autenticación, sesión y administración de cuentas.
+Backend en microservicios .NET detrás de un API Gateway, front en React y base de datos SQL Server.
 
-## Stack
+| Componente | Responsabilidad | Puerto |
+|---|---|---|
+| Front | Aplicación web (React) | 5173 |
+| API Gateway | Punto de entrada de las APIs (YARP) | 5080 |
+| Seguridad | Sesión, cuentas de usuario y claves públicas (JWKS) | 5090 |
+| Académico | Materias e inscripciones | 5091 |
+| Logs | Auditoría y errores; solo lo llaman los otros microservicios | 5092 |
 
-- .NET 10 / ASP.NET Core (controladores)
-- Entity Framework Core 10 + SQL Server 2022
-- FluentValidation 12
-- xUnit
-- JWT RS256 para el token de acceso, HMAC-SHA256 para el de renovación
+**Stack:** .NET 10, ASP.NET Core, YARP, Entity Framework Core 10, FluentValidation, xUnit, SQL Server 2022, React 19, TypeScript, Vite y MUI.
 
 ## Estructura
 
 ```
 Back/
-├── Universidad.Mectronics.Seguridad/
-│   ├── Universidad.Mectronics.Seguridad.slnx
-│   ├── Dominio.Seguridad            Entidades, objetos de valor y reglas del dominio
-│   ├── Aplicacion.Seguridad         Casos de uso, DTOs, validadores e interfaces
-│   ├── Infraestructura.Seguridad    EF Core, repositorios, JWT, hash de contraseñas, auditoría
-│   ├── Api.Seguridad                Controladores, autenticación, CSRF, manejo de errores
-│   └── PruebasUnitarias.Seguridad   Pruebas unitarias de los casos de uso
-└── Universidad.Mectronics.Transversal   Resultado/Error, paginación, nombres de claims y cookies
-Database/              Scripts DDL, DML y Metadata
-scripts/               Configuración de secretos (Linux/macOS y Windows)
-ColeccionPostman.json  Colección de Postman
+├── Universidad.Mectronics.Seguridad/    Dominio, Aplicacion, Infraestructura, Api y PruebasUnitarias
+├── Universidad.Mectronics.Academico/    Dominio, Aplicacion, Infraestructura, Api y PruebasUnitarias
+├── Universidad.Mectronics.Logs/         Dominio, Aplicacion, Infraestructura y Api
+├── Universidad.Mectronics.Gateway/      Api.Gateway
+└── Universidad.Mectronics.Transversal/  Código compartido: Resultado/Error, paginación, auditoría, cliente entre microservicios con resiliencia
+Front/                 Aplicación React
+Database/              DDL.sql, DML.sql y Metadata.sql
+docker/                Script que genera los secretos del entorno Docker
+scripts/               Configuración de secretos para ejecutar sin Docker
+docker-compose.yml
+ColeccionPostman.json
 ```
-
-Las dependencias van hacia adentro: `Api → Aplicacion → Dominio`, e `Infraestructura` implementa las interfaces de `Aplicacion`.
-
-## Requisitos
-
-- SDK de .NET 10
-- Docker (o un SQL Server propio)
-- Linux/macOS: `openssl`. Windows: PowerShell 7
 
 ## 1. Base de datos
 
-Levantar SQL Server:
+Se necesita un SQL Server 2019 o superior. Ejecute los scripts de `Database/` en este orden: `DDL.sql`, `DML.sql` y `Metadata.sql`. Crean la base `UniversidadMectronics` con sus datos iniciales y se pueden volver a ejecutar sin perder datos.
+
+Con `sqlcmd`, desde la raíz del repositorio:
 
 ```bash
-docker run -d --name sql-server-mectronics -e ACCEPT_EULA=Y -e 'MSSQL_SA_PASSWORD=<ContrasenaSa>' \
-  -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+sqlcmd -S localhost,1433 -U sa -P '<Contraseña>' -C -i Database/DDL.sql
+sqlcmd -S localhost,1433 -U sa -P '<Contraseña>' -C -i Database/DML.sql
+sqlcmd -S localhost,1433 -U sa -P '<Contraseña>' -C -i Database/Metadata.sql
 ```
 
-Ejecutar los scripts de `Database/` en este orden: `DDL.sql`, `DML.sql`, `Metadata.sql`. Desde la raíz del repositorio:
+También se pueden abrir y ejecutar desde SQL Server Management Studio o la extensión SQL Server de VS Code.
 
+## 2. Ejecutar con Docker (recomendado)
 
-## 2. Secretos
+Requisitos: Docker con Docker Compose. Funciona en Linux, macOS y Windows (Docker Desktop con contenedores Linux).
 
-No hay secretos en el repositorio. Se guardan con `dotnet user-secrets` (solo se cargan en `Development`):
+El SQL Server debe aceptar conexiones por TCP con autenticación de SQL Server (usuario y contraseña); los contenedores no pueden usar autenticación de Windows. En un SQL Server instalado en Windows, habilite TCP/IP en el puerto 1433 desde SQL Server Configuration Manager y la autenticación mixta, y permita el puerto en el firewall.
 
-| Clave | Contenido |
+1. Copie `.env.example` como `.env` y ponga la cadena de conexión de su SQL Server. Si SQL Server corre en el mismo equipo (instalado o en un contenedor con el puerto 1433 publicado), use `host.docker.internal` como servidor:
+
+   ```
+   CADENA_CONEXION=Server=host.docker.internal,1433;Database=UniversidadMectronics;User Id=sa;Password=<Contraseña>;TrustServerCertificate=True
+   ```
+
+2. Levante todo:
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+3. Abra http://localhost:5173.
+
+No hay que configurar más secretos: al primer arranque el servicio `secretos` genera las claves JWT y las claves de Logs, y las guarda en el volumen `secretos`. Los microservicios corren en modo `Development`, así que Swagger queda disponible en http://localhost:5090/swagger y http://localhost:5091/swagger.
+
+| Comando | Qué hace |
 |---|---|
-| `ConnectionStrings:UniversidadMectronics` | Cadena de conexión |
-| `Jwt:ClavePrivadaAcceso` | Clave RSA 2048, PKCS#8 en Base64 (una línea) |
-| `Jwt:ClaveRenovacion` | 32 bytes aleatorios en Base64 |
-| `Jwt:ClaveHuella` | 32 bytes aleatorios en Base64 |
+| `docker compose logs -f seguridad` | Muestra el log de un servicio |
+| `docker compose down` | Detiene todo |
+| `docker compose down -v` | Detiene todo y borra las claves generadas (las sesiones abiertas dejan de valer) |
+| `docker compose exec logs cat /secretos/logs.env` | Muestra las claves de Logs (para Postman) |
 
-El script los genera y guarda todos:
+## 3. Ejecutar sin Docker
+
+Requisitos: SDK de .NET 10, Node 20 o superior y `openssl` (Linux/macOS) o PowerShell 7 (Windows).
+
+### Secretos
+
+Los secretos no están en el repositorio; se guardan con `dotnet user-secrets`. El script los genera y los configura en Seguridad, Académico y Logs; solo necesita la cadena de conexión:
 
 ```bash
 # Linux / macOS
-./scripts/configurar-secretos.sh 'Server=localhost,1433;Database=UniversidadMectronics;User Id=sa;Password=<ContrasenaSa>;TrustServerCertificate=True'
+./scripts/configurar-secretos.sh 'Server=localhost,1433;Database=UniversidadMectronics;User Id=sa;Password=<Contraseña>;TrustServerCertificate=True'
 ```
 
 ```powershell
 # Windows (PowerShell 7)
 pwsh -ExecutionPolicy Bypass -File .\scripts\configurar-secretos.ps1 `
-  -CadenaConexion 'Server=localhost,1433;Database=UniversidadMectronics;User Id=sa;Password=<ContrasenaSa>;TrustServerCertificate=True'
+  -CadenaConexion 'Server=localhost,1433;Database=UniversidadMectronics;User Id=sa;Password=<Contraseña>;TrustServerCertificate=True'
 ```
 
-Las claves JWT solo las usa la API internamente; no hay que conocerlas ni configurarlas en ningún cliente. Para verlas: `dotnet user-secrets list --project Back/Universidad.Mectronics.Seguridad/Api.Seguridad`. Volver a ejecutar el script las cambia y cierra las sesiones abiertas.
+| Microservicio | Clave | Contenido |
+|---|---|---|
+| Seguridad | `ConnectionStrings:UniversidadMectronics` | Cadena de conexión |
+| Seguridad | `Jwt:ClavePrivadaAcceso` | Clave RSA 2048 en PKCS#8 y Base64 |
+| Seguridad | `Jwt:ClaveRenovacion` | 32 bytes aleatorios en Base64 |
+| Seguridad | `Jwt:ClaveHuella` | 32 bytes aleatorios en Base64 |
+| Seguridad | `Logs:ClaveAplicacion` | Clave de Seguridad ante Logs |
+| Académico | `ConnectionStrings:UniversidadMectronics` | Cadena de conexión |
+| Académico | `Logs:ClaveAplicacion` | Clave de Académico ante Logs |
+| Logs | `ConnectionStrings:UniversidadMectronics` | Cadena de conexión |
+| Logs | `ClavesAplicacion:Servicio-Seguridad` | La misma clave de Seguridad |
+| Logs | `ClavesAplicacion:Servicio-Academico` | La misma clave de Académico |
 
-Si falta algún secreto la API no arranca y el error dice cuál. Quedan en `~/.microsoft/usersecrets/2718dd79-12d1-4fc8-a6f6-bc9d6bbbaa70/secrets.json` (Windows: `%APPDATA%\Microsoft\UserSecrets\2718dd79-12d1-4fc8-a6f6-bc9d6bbbaa70\secrets.json`).
+Fuera de `Development` los mismos valores se pasan como variables de entorno, con `__` en lugar de `:` (por ejemplo `Jwt__ClaveHuella`).
 
-| Problema | Solución |
-|---|---|
-| *Falta la configuración 'Jwt:...'* al arrancar | Ejecutar el script |
-| Error con `ClavePrivadaAcceso` | La clave no está en PKCS#8 o tiene saltos de línea; regenerarla con el script |
-| `Permission denied` al ejecutar el script | `chmod +x scripts/configurar-secretos.sh` |
-| Windows: `ExportPkcs8PrivateKey` o `GetBytes` no existe | Usar PowerShell 7 (`pwsh`), no Windows PowerShell 5.1 |
-| Windows: la ejecución de scripts está deshabilitada | Ejecutarlo con `pwsh -ExecutionPolicy Bypass -File ...` |
-| `Login failed for user 'sa'` | Revisar la contraseña y pasarla entre comillas simples |
-| Error de `certificate chain` | Agregar `TrustServerCertificate=True` a la cadena |
+### Microservicios
 
-Fuera de `Development` los mismos valores se pasan como variables de entorno, con `__` en lugar de `:` (`Jwt__ClaveHuella`).
+Desde VS Code (extensión C#): en *Ejecutar y depurar* elija **Todos los microservicios** y presione F5.
 
-## 3. Ejecutar
+Desde la terminal, cada uno en su propia ventana y desde la raíz del repositorio:
 
 ```bash
+dotnet run --project Back/Universidad.Mectronics.Logs/Api.Logs --launch-profile http
 dotnet run --project Back/Universidad.Mectronics.Seguridad/Api.Seguridad --launch-profile http
+dotnet run --project Back/Universidad.Mectronics.Academico/Api.Academico --launch-profile http
+dotnet run --project Back/Universidad.Mectronics.Gateway/Api.Gateway --launch-profile http
 ```
 
-| | URL |
+### Front
+
+```bash
+cd Front
+npm install
+npm run dev
+```
+
+Queda en http://localhost:5173. Vite redirige `/api` al gateway (http://localhost:5080, configurable con la variable `URL_API_GATEWAY`).
+
+| Comando | Qué hace |
 |---|---|
-| API | http://localhost:5090 |
-| Swagger | http://localhost:5090/swagger |
-| OpenAPI | http://localhost:5090/openapi/v1.json |
-| JWKS | http://localhost:5090/.well-known/jwks.json |
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Verifica tipos y genera `dist/` |
+| `npm run lint` | Revisa el código con oxlint |
 
-Usuario inicial: `superadmin@universidadmectronics.edu` / `Mectronics#2026`. La contraseña es temporal; hasta cambiarla con `PUT /api/seguridad/cuenta/contrasena` el resto de endpoints responde 403.
+## 4. Cuentas iniciales
 
-## 4. Pruebas
+Todas las cuentas que crea `DML.sql` tienen la contraseña temporal `Mectronics#2026` y piden cambiarla en el primer inicio de sesión.
+
+| Rol | Correo |
+|---|---|
+| Administrador | `admin@universidadmectronics.edu` |
+| Profesor | `laura.gomez@universidadmectronics.edu` (y 4 más) |
+| Estudiante | `sofia.ramirez@universidadmectronics.edu` (y 7 más) |
+
+Después de 5 intentos fallidos la cuenta se bloquea 15 minutos (3 minutos al ejecutar sin Docker en `Development`).
+
+## 5. Pruebas
 
 ```bash
 dotnet test Back/Universidad.Mectronics.Seguridad/PruebasUnitarias.Seguridad
+dotnet test Back/Universidad.Mectronics.Academico/PruebasUnitarias.Academico
 ```
 
-No usan base de datos ni secretos; todo corre en memoria.
+Corren en memoria: no necesitan base de datos ni secretos.
 
-## 5. Postman
+## 6. Postman
 
-Colección en [ColeccionPostman.json](ColeccionPostman.json). Maneja las cookies y el token CSRF automáticamente; las carpetas están numeradas en el orden de ejecución.
+Importe [ColeccionPostman.json](ColeccionPostman.json). Tiene una petición por endpoint, organizadas por microservicio.
 
-## Notas técnicas
+- Las peticiones van al gateway (`baseUrl`). Postman guarda las cookies de sesión y la colección agrega sola la cabecera `X-CSRF-TOKEN`.
+- Empiece por *Iniciar sesión* y *Cambiar contraseña*: con la contraseña temporal los demás endpoints responden 403. Después actualice la variable `contrasena`.
+- Para probar otro rol, cambie `email` y `contrasena` y vuelva a iniciar sesión.
+- Logs se llama directo (`baseUrlLogs`) con la variable `claveLogs`: el valor de `ClavesAplicacion__Servicio-Seguridad` (Docker) o de `ClavesAplicacion:Servicio-Seguridad` en `dotnet user-secrets list --project Back/Universidad.Mectronics.Logs/Api.Logs`.
 
-- **Sesión en cookies.** `universidad-acceso` y `universidad-renovacion` son `HttpOnly` y `SameSite=Strict`; los tokens nunca van en el cuerpo de la respuesta. El cliente debe enviar las peticiones con credenciales (`credentials: 'include'`).
-- **CSRF.** Todo `POST`, `PUT` o `DELETE` con cookies de sesión debe llevar la cabecera `X-CSRF-TOKEN` con el valor de la cookie `universidad-csrf` (double-submit cookie). El inicio de sesión no la necesita.
-- **Tokens.** El de acceso dura 15 minutos y se firma con RS256; otros servicios lo validan con la clave pública de `/.well-known/jwks.json`. El de renovación dura 7 días y no se guarda en base de datos: lleva una huella del hash de la contraseña, así que cambiarla invalida todas las sesiones anteriores.
-- **Validación por petición.** En cada request autenticado se verifica en base de datos que la cuenta siga activa, con el mismo rol y la misma contraseña.
-- **Errores.** Todas las respuestas de error son Problem Details (RFC 9457) con `codigo`, `errores` (por campo) y `traceId`.
-- **Límite de intentos.** 10 inicios de sesión por minuto por IP; después responde 429.
-- **Auditoría.** Los eventos y errores se guardan en `Logs.RegistroEvento` con la aplicación `Servicio-Seguridad`.
-- **Fechas.** Columnas `DATETIMEOFFSET`, siempre en UTC.
+## Problemas comunes
+
+| Problema | Solución |
+|---|---|
+| `CADENA_CONEXION` no definida al levantar Docker | Falta el archivo `.env` (paso 2.1) |
+| `Login failed for user` o el servicio no conecta a la base | Revise la cadena de conexión; en Docker el servidor debe ser `host.docker.internal`, no `localhost` |
+| Windows: no conecta a un SQL Server Express (`.\SQLEXPRESS`) | Las instancias con nombre usan un puerto dinámico; fije el puerto 1433 en SQL Server Configuration Manager (TCP/IP) |
+| Windows: el servicio `secretos` falla con `\r` o `illegal option` | El repositorio se clonó con saltos de línea CRLF; vuelva a clonarlo (el `.gitattributes` fuerza LF en los `.sh`) |
+| Error de `certificate chain` | Agregue `TrustServerCertificate=True` a la cadena |
+| *Falta la configuración '...'* al arrancar sin Docker | Ejecute el script de secretos |
+| Académico responde 401 con una sesión válida | Seguridad no está arriba o se regeneraron las claves; inicie sesión de nuevo |
+| Un puerto ya está en uso | Detenga la ejecución local (o la de Docker) antes de iniciar la otra |
+| Windows: `ExportPkcs8PrivateKey` no existe | Use PowerShell 7 (`pwsh`), no Windows PowerShell 5.1 |

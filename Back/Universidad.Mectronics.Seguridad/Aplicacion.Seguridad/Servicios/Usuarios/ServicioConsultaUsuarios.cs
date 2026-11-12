@@ -73,7 +73,7 @@ public sealed class ServicioConsultaUsuarios(
         }
 
         Usuario? usuario = await repositorioUsuarios.ObtenerPorIdAsync(id, cancelacion);
-        if (usuario is null || !autorizador.PuedeGestionar(usuario))
+        if (usuario is null)
         {
             return ErroresUsuario.CrearNoEncontrado(id);
         }

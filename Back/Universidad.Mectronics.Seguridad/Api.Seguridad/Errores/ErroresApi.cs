@@ -3,8 +3,8 @@ using Universidad.Mectronics.Transversal.Resultados;
 namespace Api.Seguridad.Errores;
 
 /// <summary>
-/// Errores que produce la propia API, antes de llegar a un caso de uso: autenticación, autorización, CSRF y contraseña
-/// temporal. Usan el mismo <see cref="Error"/> que la capa de Aplicación, así el frontend recibe siempre la misma estructura.
+/// Errores generados por la API antes de llegar a un caso de uso: autenticación, autorización, CSRF y contraseña
+/// temporal.
 /// </summary>
 public static class ErroresApi
 {

@@ -3,10 +3,7 @@ using Dominio.Seguridad.Excepciones;
 
 namespace Dominio.Seguridad.Entidades;
 
-/// <summary>
-/// Funcionalidad del sistema que se puede autorizar a un rol (tabla <c>Seguridad.Permiso</c>). Incluye los permisos
-/// de todos los microservicios, por eso el código solo se valida por su formato y no contra <see cref="CodigosPermiso"/>.
-/// </summary>
+/// <summary>Funcionalidad del sistema que se puede autorizar a un rol.</summary>
 public sealed class Permiso
 {
     /// <summary>Longitud máxima del código (columna <c>NVARCHAR(100)</c>).</summary>
@@ -15,16 +12,14 @@ public sealed class Permiso
     /// <summary>Longitud máxima de la descripción (columna <c>NVARCHAR(250)</c>).</summary>
     public const int LongitudMaximaDescripcion = 250;
 
-    /// <summary>Constructor requerido por Entity Framework para materializar el registro.</summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Permiso"/>.</summary>
     private Permiso()
     {
         Codigo = string.Empty;
         Descripcion = string.Empty;
     }
 
-    /// <summary>
-    /// Crea un permiso.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Permiso"/>.</summary>
     /// <param name="codigo">Código único en minúsculas, números, puntos y guiones (por ejemplo, <c>usuarios.crear</c>).</param>
     /// <param name="descripcion">Explicación de la funcionalidad que habilita.</param>
     public Permiso(string codigo, string descripcion)
@@ -33,7 +28,7 @@ public sealed class Permiso
         Descripcion = ValidarDescripcion(descripcion);
     }
 
-    /// <summary>Identificador generado por la base de datos (PK).</summary>
+    /// <summary>Identificador.</summary>
     public short Id { get; private set; }
 
     /// <summary>

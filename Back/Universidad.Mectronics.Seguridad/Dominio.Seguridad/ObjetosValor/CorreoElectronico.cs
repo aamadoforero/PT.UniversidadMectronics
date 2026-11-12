@@ -5,17 +5,14 @@ using Dominio.Seguridad.Excepciones;
 namespace Dominio.Seguridad.ObjetosValor;
 
 /// <summary>
-/// Correo electrónico con el que una cuenta inicia sesión. Siempre está normalizado (sin espacios en los extremos y en
-/// minúsculas) y es válido: si existe una instancia, el valor ya pasó la validación. Dos correos son iguales si su valor lo es.
+/// Correo electrónico de una cuenta, normalizado en minúsculas y sin espacios en los extremos.
 /// </summary>
 public sealed record CorreoElectronico
 {
     /// <summary>Longitud máxima del correo (columna <c>NVARCHAR(150)</c>).</summary>
     public const int LongitudMaxima = 150;
 
-    /// <summary>
-    /// Crea la instancia con un valor ya normalizado y validado. Es privado para obligar a usar <see cref="Crear"/> o <see cref="TryCrear"/>.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="CorreoElectronico"/>.</summary>
     /// <param name="valor">Correo normalizado.</param>
     private CorreoElectronico(string valor) => Valor = valor;
 

@@ -1,6 +1,5 @@
 using Aplicacion.Seguridad.Dtos.Catalogos;
 using Aplicacion.Seguridad.Interfaces;
-using Infraestructura.Seguridad.Persistencia.Modelos;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infraestructura.Seguridad.Persistencia.Repositorios;
@@ -17,7 +16,7 @@ internal sealed class ConsultaCatalogos(ContextoSeguridad contexto) : IConsultaC
     /// <param name="cancelacion">Permite cancelar la consulta si la petición se abandona.</param>
     /// <returns>Los programas activos.</returns>
     public async Task<IReadOnlyList<ElementoCatalogoDto>> ObtenerProgramasActivosAsync(CancellationToken cancelacion) =>
-        await contexto.Set<ProgramaCatalogo>()
+        await contexto.Programas
             .AsNoTracking()
             .Where(programa => programa.Activo)
             .OrderBy(programa => programa.Nombre)
@@ -30,7 +29,7 @@ internal sealed class ConsultaCatalogos(ContextoSeguridad contexto) : IConsultaC
     /// <param name="cancelacion">Permite cancelar la consulta si la petición se abandona.</param>
     /// <returns>Las categorías.</returns>
     public async Task<IReadOnlyList<ElementoCatalogoDto>> ObtenerCategoriasProfesorAsync(CancellationToken cancelacion) =>
-        await contexto.Set<CategoriaProfesorCatalogo>()
+        await contexto.CategoriasProfesor
             .AsNoTracking()
             .OrderBy(categoria => categoria.Nombre)
             .Select(categoria => new ElementoCatalogoDto(categoria.Id, categoria.Nombre))
@@ -43,7 +42,7 @@ internal sealed class ConsultaCatalogos(ContextoSeguridad contexto) : IConsultaC
     /// <param name="cancelacion">Permite cancelar la consulta si la petición se abandona.</param>
     /// <returns><see langword="true"/> si el programa existe y está activo.</returns>
     public Task<bool> ExisteProgramaActivoAsync(int programaId, CancellationToken cancelacion) =>
-        contexto.Set<ProgramaCatalogo>().AnyAsync(programa => programa.Id == programaId && programa.Activo, cancelacion);
+        contexto.Programas.AnyAsync(programa => programa.Id == programaId && programa.Activo, cancelacion);
 
     /// <summary>
     /// Indica si existe una categoría de profesor con el identificador indicado.
@@ -52,5 +51,5 @@ internal sealed class ConsultaCatalogos(ContextoSeguridad contexto) : IConsultaC
     /// <param name="cancelacion">Permite cancelar la consulta si la petición se abandona.</param>
     /// <returns><see langword="true"/> si la categoría existe.</returns>
     public Task<bool> ExisteCategoriaProfesorAsync(byte categoriaId, CancellationToken cancelacion) =>
-        contexto.Set<CategoriaProfesorCatalogo>().AnyAsync(categoria => categoria.Id == categoriaId, cancelacion);
+        contexto.CategoriasProfesor.AnyAsync(categoria => categoria.Id == categoriaId, cancelacion);
 }

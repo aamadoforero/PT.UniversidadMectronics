@@ -6,17 +6,14 @@ using Aplicacion.Seguridad.Mapeos;
 using Aplicacion.Seguridad.Servicios.Autenticacion;
 using Aplicacion.Seguridad.Validadores;
 using Dominio.Seguridad.Entidades;
-using Dominio.Seguridad.ObjetosValor;
 using FluentValidation;
 using FluentValidation.Results;
+using Universidad.Mectronics.Transversal.Auditoria;
 using Universidad.Mectronics.Transversal.Resultados;
 
 namespace Aplicacion.Seguridad.Servicios.CuentaPropia;
 
-/// <summary>
-/// Implementación de los casos de uso sobre la propia cuenta. Identifica la cuenta con <see cref="IUsuarioActual"/> y la
-/// vuelve a cargar en cada operación, para rechazar cuentas desactivadas aunque su token de acceso aún no haya vencido.
-/// </summary>
+/// <summary>Implementación de los casos de uso sobre la propia cuenta.</summary>
 /// <param name="usuarioActual">Identidad de quien hace la petición.</param>
 /// <param name="repositorioUsuarios">Acceso a las cuentas.</param>
 /// <param name="unidadTrabajo">Guarda los cambios de la cuenta.</param>
@@ -24,7 +21,6 @@ namespace Aplicacion.Seguridad.Servicios.CuentaPropia;
 /// <param name="reloj">Hora actual en UTC.</param>
 /// <param name="registroEventos">Auditoría de los cambios de contraseña.</param>
 /// <param name="generadorSesion">Arma la sesión nueva tras cambiar la contraseña.</param>
-/// <param name="validadorDatosPersonales">Reglas de formato de los datos personales.</param>
 /// <param name="validadorCambioContrasena">Reglas de formato del cambio de contraseña.</param>
 public sealed class ServicioCuentaPropia(
     IUsuarioActual usuarioActual,
@@ -34,7 +30,6 @@ public sealed class ServicioCuentaPropia(
     IReloj reloj,
     IRegistroEventos registroEventos,
     GeneradorSesion generadorSesion,
-    IValidator<ActualizarDatosPersonalesDto> validadorDatosPersonales,
     IValidator<CambiarContrasenaDto> validadorCambioContrasena) : IServicioCuentaPropia
 {
     /// <summary>
@@ -50,35 +45,6 @@ public sealed class ServicioCuentaPropia(
             return ErroresAutenticacion.CrearSesionInvalida();
         }
 
-        return usuario.ConvertirAPerfilDto();
-    }
-
-    /// <summary>
-    /// Actualiza el nombre de la cuenta autenticada.
-    /// </summary>
-    /// <param name="datos">Datos nuevos.</param>
-    /// <param name="cancelacion">Permite cancelar la operación si la petición se abandona.</param>
-    /// <returns>El perfil actualizado, o un error de validación o de sesión inválida.</returns>
-    public async Task<Resultado<PerfilDto>> ActualizarDatosPersonalesAsync(
-        ActualizarDatosPersonalesDto datos,
-        CancellationToken cancelacion)
-    {
-        ArgumentNullException.ThrowIfNull(datos);
-
-        ValidationResult validacion = await validadorDatosPersonales.ValidateAsync(datos, cancelacion);
-        if (!validacion.IsValid)
-        {
-            return ErroresCuentaPropia.CrearDatosInvalidos(validacion.ObtenerDetalleError());
-        }
-
-        Usuario? usuario = await ObtenerCuentaActivaAsync(cancelacion);
-        if (usuario is null)
-        {
-            return ErroresAutenticacion.CrearSesionInvalida();
-        }
-
-        usuario.ActualizarDatosPersonales(NombreCompleto.Crear(datos.NombreCompleto), reloj.AhoraUtc);
-        await unidadTrabajo.GuardarCambiosAsync(cancelacion);
         return usuario.ConvertirAPerfilDto();
     }
 

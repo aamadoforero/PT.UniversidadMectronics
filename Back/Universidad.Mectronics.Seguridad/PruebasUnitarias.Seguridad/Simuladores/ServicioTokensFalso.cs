@@ -5,8 +5,7 @@ using Dominio.Seguridad.Entidades;
 namespace PruebasUnitarias.Seguridad.Simuladores;
 
 /// <summary>
-/// Tokens simulados. El de renovación lleva el identificador de la cuenta y su hash como huella, así la prueba puede
-/// comprobar que un cambio de contraseña invalida los tokens anteriores, sin depender de la criptografía real.
+/// Tokens simulados que llevan el identificador de la cuenta y su hash como huella.
 /// </summary>
 public sealed class ServicioTokensFalso : IServicioTokens
 {

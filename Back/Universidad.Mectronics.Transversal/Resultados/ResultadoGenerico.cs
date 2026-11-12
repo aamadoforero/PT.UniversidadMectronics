@@ -2,7 +2,6 @@ namespace Universidad.Mectronics.Transversal.Resultados;
 
 /// <summary>
 /// Resultado de un caso de uso que devuelve datos de tipo <typeparamref name="T"/> cuando es exitoso.
-/// Gracias a las conversiones implícitas, un método puede escribir <c>return dto;</c> o <c>return ErroresUsuario.NoEncontrado(id);</c>.
 /// </summary>
 /// <typeparam name="T">Tipo de los datos que devuelve la operación exitosa.</typeparam>
 public sealed class Resultado<T> : Resultado
@@ -10,9 +9,7 @@ public sealed class Resultado<T> : Resultado
     /// <summary>Datos de la operación; solo tiene valor si fue exitosa.</summary>
     private readonly T? _valor;
 
-    /// <summary>
-    /// Crea el resultado. Se usa a través de <see cref="Resultado.CrearExito{T}(T)"/> y <see cref="Resultado.CrearFallo{T}(Error)"/>.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Resultado{T}"/>.</summary>
     /// <param name="valor">Datos de la operación exitosa, o el valor por defecto si falló.</param>
     /// <param name="esExitoso">Indica si la operación fue exitosa.</param>
     /// <param name="error">Error del fallo, o <see cref="Error.Ninguno"/> si fue exitosa.</param>

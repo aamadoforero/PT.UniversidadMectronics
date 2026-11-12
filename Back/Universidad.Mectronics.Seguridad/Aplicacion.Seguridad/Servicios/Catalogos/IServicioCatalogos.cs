@@ -9,8 +9,8 @@ namespace Aplicacion.Seguridad.Servicios.Catalogos;
 public interface IServicioCatalogos
 {
     /// <summary>
-    /// Obtiene los roles que se pueden asignar desde la aplicación (todos menos el de superadministración), ordenados por nombre.
-    /// Exige <c>usuarios.crear</c> o <c>usuarios.cambiar-rol</c>.
+    /// Obtiene los roles que se pueden asignar desde la aplicación, ordenados por nombre.
+    /// Exige <c>usuarios.crear</c>.
     /// </summary>
     /// <param name="cancelacion">Permite cancelar la operación si la petición se abandona.</param>
     /// <returns>Los roles asignables, o un error de falta de permiso.</returns>

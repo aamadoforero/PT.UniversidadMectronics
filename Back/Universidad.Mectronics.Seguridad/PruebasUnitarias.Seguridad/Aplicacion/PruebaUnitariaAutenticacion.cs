@@ -27,9 +27,7 @@ public sealed class PruebaUnitariaAutenticacion
     /// <summary>Servicio bajo prueba.</summary>
     private readonly ServicioAutenticacion _servicio;
 
-    /// <summary>
-    /// Arma el servicio con sus dobles de prueba y siembra una cuenta de estudiante con contraseña <c>Clave#2026</c>.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PruebaUnitariaAutenticacion"/>.</summary>
     public PruebaUnitariaAutenticacion()
     {
         ServicioTokensFalso tokens = new();
@@ -68,20 +66,23 @@ public sealed class PruebaUnitariaAutenticacion
     }
 
     /// <summary>
-    /// Tras cinco intentos fallidos la cuenta se bloquea y rechaza incluso la contraseña correcta.
+    /// Los cinco intentos fallidos responden el error genérico; a partir del sexto la cuenta está bloqueada y responde
+    /// cuenta bloqueada, incluso con la contraseña correcta.
     /// </summary>
     /// <returns>Una tarea que termina con la verificación.</returns>
     [Fact]
-    public async Task IniciarSesionTrasCincoIntentosFallidosRechazaAunConLaContrasenaCorrecta()
+    public async Task IniciarSesionTrasCincoIntentosFallidosRespondeCuentaBloqueadaAunConLaContrasenaCorrecta()
     {
         for (int intento = 1; intento <= 5; intento++)
         {
-            await _servicio.IniciarSesionAsync(new("ana.perez@universidad.edu", "Otra#2026"), CancellationToken.None);
+            Resultado<SesionCreadaDto> fallido = await _servicio.IniciarSesionAsync(new("ana.perez@universidad.edu", "Otra#2026"), CancellationToken.None);
+            Assert.Equal("Autenticacion.CredencialesInvalidas", fallido.Error.Codigo);
         }
 
         Resultado<SesionCreadaDto> resultado = await _servicio.IniciarSesionAsync(new("ana.perez@universidad.edu", "Clave#2026"), CancellationToken.None);
 
-        Assert.Equal("Autenticacion.CredencialesInvalidas", resultado.Error.Codigo);
+        Assert.Equal("Autenticacion.CuentaBloqueada", resultado.Error.Codigo);
+        Assert.Equal(TipoError.DemasiadosIntentos, resultado.Error.Tipo);
         Assert.NotNull(_repositorio.Usuarios[0].BloqueoHasta);
     }
 

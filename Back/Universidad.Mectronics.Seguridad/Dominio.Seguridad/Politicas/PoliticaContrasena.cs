@@ -3,8 +3,7 @@ using Dominio.Seguridad.Excepciones;
 namespace Dominio.Seguridad.Politicas;
 
 /// <summary>
-/// Reglas que debe cumplir una contraseña en texto plano antes de convertirse en hash: entre 8 y 128 caracteres,
-/// al menos una mayúscula, una minúscula, un número y un símbolo, y ningún espacio. Calcular el hash le corresponde a Infraestructura.
+/// Requisitos de una contraseña: entre 8 y 128 caracteres, con mayúscula, minúscula, número y símbolo, y sin espacios.
 /// </summary>
 public static class PoliticaContrasena
 {
@@ -17,14 +16,10 @@ public static class PoliticaContrasena
     /// </summary>
     public const int LongitudMaxima = 128;
 
-    /// <summary>
-    /// Evalúa la contraseña y devuelve la lista de requisitos que no cumple.
-    /// </summary>
+    /// <summary>Evalúa la contraseña y devuelve la lista de requisitos que no cumple.</summary>
     /// <param name="contrasena">Contraseña en texto plano.</param>
-    /// <returns>
-    /// Mensajes legibles, uno por requisito incumplido. Una lista vacía significa que la contraseña es válida.
-    /// Sirve para mostrar al usuario todo lo que debe corregir de una sola vez.
-    /// </returns>
+    /// <returns>Mensajes de los requisitos incumplidos. Una lista vacía significa que la contraseña es
+    /// válida.</returns>
     public static IReadOnlyList<string> ObtenerIncumplimientos(string? contrasena)
     {
         if (string.IsNullOrEmpty(contrasena))

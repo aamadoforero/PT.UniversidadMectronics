@@ -4,8 +4,8 @@ using Universidad.Mectronics.Transversal.Autenticacion;
 namespace Api.Seguridad.ContrasenaTemporal;
 
 /// <summary>
-/// Obliga a cambiar la contraseña temporal antes de usar el sistema: mientras el token indique
-/// <c>debe_cambiar_contrasena=true</c>, solo responden los endpoints marcados con <see cref="PermiteContrasenaTemporalAttribute"/>.
+/// Mientras la sesión tenga contraseña temporal, solo permite los endpoints marcados con
+/// <see cref="PermiteContrasenaTemporalAttribute"/>.
 /// </summary>
 /// <param name="siguiente">Siguiente componente del pipeline.</param>
 public sealed class MiddlewareContrasenaTemporal(RequestDelegate siguiente)

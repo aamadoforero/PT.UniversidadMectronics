@@ -5,9 +5,8 @@ using Dominio.Seguridad.Politicas;
 namespace Infraestructura.Seguridad.Criptografia;
 
 /// <summary>
-/// Implementación de <see cref="IGeneradorContrasenaTemporal"/> con <see cref="RandomNumberGenerator"/>, que es
-/// criptográficamente seguro. Garantiza al menos un carácter de cada tipo que exige <see cref="PoliticaContrasena"/> y omite
-/// los que se confunden al leerlos (I, l, O, 0, 1).
+/// Genera contraseñas temporales con <see cref="RandomNumberGenerator"/> que cumplen <see cref="PoliticaContrasena"/> y
+/// omiten caracteres ambiguos.
 /// </summary>
 internal sealed class GeneradorContrasenaTemporal : IGeneradorContrasenaTemporal
 {

@@ -13,14 +13,12 @@ public sealed class PerfilEstudiante
     /// <summary>Último semestre permitido (coincide con el CHECK <c>CK_Estudiante_UbicacionSemestral</c>).</summary>
     public const int UbicacionSemestralMaxima = 10;
 
-    /// <summary>Constructor requerido por Entity Framework para materializar el registro.</summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PerfilEstudiante"/>.</summary>
     private PerfilEstudiante()
     {
     }
 
-    /// <summary>
-    /// Crea el perfil. Solo lo usa <see cref="Usuario.CrearEstudiante"/>.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PerfilEstudiante"/>.</summary>
     /// <param name="programaId">Programa académico del estudiante.</param>
     /// <param name="ubicacionSemestral">Semestre que cursa, entre 1 y 10.</param>
     internal PerfilEstudiante(int programaId, int ubicacionSemestral)
@@ -28,17 +26,22 @@ public sealed class PerfilEstudiante
         Actualizar(programaId, ubicacionSemestral);
     }
 
-    /// <summary>Identificador generado por la base de datos (PK).</summary>
+    /// <summary>Identificador.</summary>
     public int Id { get; private set; }
 
-    /// <summary>Cuenta a la que pertenece el perfil (relación 1 a 1). Lo asigna Entity Framework al guardar.</summary>
+    /// <summary>Cuenta a la que pertenece el perfil.</summary>
     public int UsuarioId { get; private set; }
 
-    /// <summary>Programa académico en el que está matriculado (FK a <c>Academico.Programa</c>).</summary>
+    /// <summary>Programa académico en el que está matriculado.</summary>
     public int ProgramaId { get; private set; }
 
     /// <summary>Semestre que cursa actualmente, entre <see cref="UbicacionSemestralMinima"/> y <see cref="UbicacionSemestralMaxima"/>.</summary>
     public int UbicacionSemestral { get; private set; }
+
+    /// <summary>
+    /// Programa en el que está matriculado; es <see langword="null"/> en un perfil recién creado.
+    /// </summary>
+    public Programa? Programa { get; private set; }
 
     /// <summary>
     /// Cambia el programa y el semestre después de validarlos.

@@ -1,5 +1,3 @@
-using Dominio.Seguridad.Entidades;
-
 namespace Dominio.Seguridad.Autorizacion;
 
 /// <summary>
@@ -22,7 +20,4 @@ public static class CodigosPermisoUsuarios
 
     /// <summary>Generar una contraseña temporal para una cuenta.</summary>
     public const string RestablecerContrasena = "usuarios.restablecer-contrasena";
-
-    /// <summary>Cambiar el rol de una cuenta (solo entre roles con el mismo <see cref="TipoPerfil"/>).</summary>
-    public const string CambiarRol = "usuarios.cambiar-rol";
 }

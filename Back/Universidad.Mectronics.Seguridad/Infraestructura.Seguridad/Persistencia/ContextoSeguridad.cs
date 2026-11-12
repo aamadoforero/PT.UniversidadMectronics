@@ -3,13 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infraestructura.Seguridad.Persistencia;
 
-/// <summary>
-/// Contexto de Entity Framework del microservicio de Seguridad. Mapea solo las tablas de las que es responsable
-/// (esquema <c>Seguridad</c> y los perfiles <c>Academico.Estudiante</c> y <c>Academico.Profesor</c>). No usa migraciones:
-/// el esquema lo crean los scripts de <c>Database/</c>, y la cadena de conexión se configura en <c>ConnectionStrings:UniversidadMectronics</c>.
-/// Las fechas son <see cref="DateTimeOffset"/>, que Entity Framework mapea de forma nativa a <c>DATETIMEOFFSET</c>.
-/// </summary>
-/// <param name="opciones">Opciones del contexto (proveedor SQL Server y cadena de conexión), registradas por inyección de dependencias.</param>
+/// <summary>Contexto de Entity Framework del microservicio de Seguridad.</summary>
+/// <param name="opciones">Opciones del contexto (proveedor SQL Server y cadena de conexión), registradas por inyección
+/// de dependencias.</param>
 public sealed class ContextoSeguridad(DbContextOptions<ContextoSeguridad> opciones) : DbContext(opciones)
 {
     /// <summary>Cuentas de usuario. Cada consulta incluye siempre su rol, sus permisos y su perfil académico.</summary>
@@ -20,6 +16,15 @@ public sealed class ContextoSeguridad(DbContextOptions<ContextoSeguridad> opcion
 
     /// <summary>Catálogo de permisos de todos los microservicios.</summary>
     public DbSet<Permiso> Permisos => Set<Permiso>();
+
+    /// <summary>Programas académicos (solo lectura).</summary>
+    public DbSet<Programa> Programas => Set<Programa>();
+
+    /// <summary>Categorías de profesor (solo lectura).</summary>
+    public DbSet<CategoriaProfesor> CategoriasProfesor => Set<CategoriaProfesor>();
+
+    /// <summary>Inscripciones de los estudiantes; Seguridad solo las cancela al desactivar una cuenta.</summary>
+    public DbSet<Inscripcion> Inscripciones => Set<Inscripcion>();
 
     /// <summary>
     /// Aplica todas las configuraciones de entidad (<c>IEntityTypeConfiguration</c>) de la carpeta

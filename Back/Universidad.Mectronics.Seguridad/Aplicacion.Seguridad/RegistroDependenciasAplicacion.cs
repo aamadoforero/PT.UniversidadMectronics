@@ -2,27 +2,22 @@ using Aplicacion.Seguridad.Servicios.Autenticacion;
 using Aplicacion.Seguridad.Servicios.Catalogos;
 using Aplicacion.Seguridad.Servicios.CuentaPropia;
 using Aplicacion.Seguridad.Servicios.Usuarios;
-using Dominio.Seguridad.Politicas;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Aplicacion.Seguridad;
 
-/// <summary>
-/// Registro en el contenedor de inyección de dependencias de los servicios de la capa de Aplicación. La API lo invoca al
-/// arrancar; las interfaces de <c>Interfaces/</c> las registra cada capa que las implementa.
-/// </summary>
+/// <summary>Registro de los servicios de la capa de Aplicación.</summary>
 public static class RegistroDependenciasAplicacion
 {
     /// <summary>
-    /// Registra los casos de uso y las políticas de la capa de Aplicación.
+    /// Registra los casos de uso de la capa de Aplicación. La <c>PoliticaBloqueo</c> la registra la API a partir de su
+    /// configuración.
     /// </summary>
     /// <param name="servicios">Colección de servicios de la aplicación.</param>
     /// <returns>La misma colección, para encadenar registros.</returns>
     public static IServiceCollection InyectarDependenciasAplicacion(this IServiceCollection servicios)
     {
-        servicios.AddSingleton(PoliticaBloqueo.Predeterminada);
-
         servicios.AddValidatorsFromAssembly(typeof(RegistroDependenciasAplicacion).Assembly, ServiceLifetime.Singleton);
 
         servicios.AddScoped<GeneradorSesion>();

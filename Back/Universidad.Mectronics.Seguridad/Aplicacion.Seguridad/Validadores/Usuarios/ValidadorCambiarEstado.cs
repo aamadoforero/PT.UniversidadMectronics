@@ -8,9 +8,7 @@ namespace Aplicacion.Seguridad.Validadores.Usuarios;
 /// </summary>
 public sealed class ValidadorCambiarEstado : AbstractValidator<CambiarEstadoDto>
 {
-    /// <summary>
-    /// Define las reglas de cada campo.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="ValidadorCambiarEstado"/>.</summary>
     public ValidadorCambiarEstado()
     {
         RuleFor(datos => datos.Activo)

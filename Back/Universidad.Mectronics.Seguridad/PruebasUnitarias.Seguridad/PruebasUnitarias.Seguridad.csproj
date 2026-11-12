@@ -5,9 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <!-- Genera el XML de documentación; el compilador advierte (CS1591) sobre miembros públicos sin documentar. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Aplica al compilar las convenciones de Back/.editorconfig (por ejemplo, prohibir var). -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 

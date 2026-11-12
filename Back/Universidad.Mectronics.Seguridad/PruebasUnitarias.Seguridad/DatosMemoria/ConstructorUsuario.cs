@@ -4,8 +4,7 @@ using Dominio.Seguridad.ObjetosValor;
 namespace PruebasUnitarias.Seguridad.DatosMemoria;
 
 /// <summary>
-/// Test Data Builder de <see cref="Usuario"/>: entrega una cuenta válida con valores por defecto, para que cada prueba solo
-/// indique el dato que le importa. Por dentro usa las fábricas del dominio, así que nunca crea una cuenta inválida.
+/// Builder de <see cref="Usuario"/> para pruebas, con valores por defecto válidos.
 /// </summary>
 public sealed class ConstructorUsuario
 {

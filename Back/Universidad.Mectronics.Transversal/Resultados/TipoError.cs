@@ -1,8 +1,7 @@
 namespace Universidad.Mectronics.Transversal.Resultados;
 
 /// <summary>
-/// Categoría de un error esperado. Determina el código HTTP con que la API lo responde, de modo que la
-/// correspondencia entre errores y códigos de estado vive en un solo lugar.
+/// Categoría de un error esperado. Determina el código HTTP de la respuesta.
 /// </summary>
 public enum TipoError
 {
@@ -22,5 +21,8 @@ public enum TipoError
     NoEncontrado = 4,
 
     /// <summary>La operación genera conflicto con el estado actual de los datos (por ejemplo, un correo duplicado). Se responde con HTTP 409.</summary>
-    Conflicto = 5
+    Conflicto = 5,
+
+    /// <summary>Se superó el número de intentos permitidos y hay que esperar antes de repetir la operación. Se responde con HTTP 429.</summary>
+    DemasiadosIntentos = 6
 }

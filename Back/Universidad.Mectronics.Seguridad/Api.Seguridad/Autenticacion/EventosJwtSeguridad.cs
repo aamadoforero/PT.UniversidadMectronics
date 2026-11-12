@@ -9,9 +9,8 @@ using Universidad.Mectronics.Transversal.Autenticacion;
 namespace Api.Seguridad.Autenticacion;
 
 /// <summary>
-/// Personaliza la autenticación JWT: toma el token de la cookie <c>HttpOnly</c>, vuelve a verificar la cuenta en la base de
-/// datos en cada petición y responde 401 y 403 con Problem Details. Gracias a la verificación, una cuenta desactivada, con
-/// otro rol o con la contraseña cambiada queda fuera en la petición siguiente, sin esperar a que venza el token.
+/// Eventos de la autenticación JWT: leen el token de la cookie, verifican la cuenta en la base de datos en cada
+/// petición y responden 401 y 403 con Problem Details.
 /// </summary>
 /// <param name="repositorioUsuarios">Acceso a las cuentas.</param>
 /// <param name="servicioTokens">Verifica la huella de la contraseña.</param>

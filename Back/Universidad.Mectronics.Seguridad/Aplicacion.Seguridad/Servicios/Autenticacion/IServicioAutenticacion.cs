@@ -18,8 +18,7 @@ public interface IServicioAutenticacion
     Task<Resultado<SesionCreadaDto>> IniciarSesionAsync(IniciarSesionDto datos, CancellationToken cancelacion);
 
     /// <summary>
-    /// Crea una sesión nueva a partir de un token de renovación válido y emite también un token de renovación nuevo
-    /// (rotación). Vuelve a consultar la cuenta para rechazar cuentas desactivadas o con la contraseña cambiada.
+    /// Crea una sesión nueva a partir de un token de renovación válido y rota el token de renovación.
     /// </summary>
     /// <param name="datos">Token de renovación recibido en la cookie.</param>
     /// <param name="cancelacion">Permite cancelar la operación si la petición se abandona.</param>

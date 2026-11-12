@@ -1,15 +1,14 @@
-using Aplicacion.Seguridad.Interfaces;
 using Dominio.Seguridad.Excepciones;
 using Microsoft.AspNetCore.Diagnostics;
+using Universidad.Mectronics.Transversal.Auditoria;
 using Universidad.Mectronics.Transversal.Excepciones;
 using Universidad.Mectronics.Transversal.Resultados;
 
 namespace Api.Seguridad.Errores;
 
 /// <summary>
-/// Red de seguridad para las excepciones que llegan a la API. Los errores esperados no pasan por aquí: los casos de uso
-/// devuelven un <c>Resultado</c>. Traduce cada excepción a Problem Details y nunca expone detalles internos: los errores
-/// inesperados se registran completos en la auditoría y el usuario solo recibe un mensaje genérico.
+/// Atrapa las excepciones no controladas, las registra en la auditoría y responde un Problem Details sin detalles
+/// internos.
 /// </summary>
 /// <param name="registroEventos">Auditoría donde se guardan los errores con su detalle técnico.</param>
 public sealed class ManejadorExcepcionesGlobal(IRegistroEventos registroEventos) : IExceptionHandler

@@ -7,8 +7,8 @@ namespace Aplicacion.Seguridad.Interfaces;
 public interface IServicioHashContrasena
 {
     /// <summary>
-    /// Hash válido de una contraseña aleatoria que nadie conoce. Cuando el correo no existe, el inicio de sesión verifica
-    /// contra este hash para tardar lo mismo que con una cuenta real, y así no revelar qué correos están registrados.
+    /// Hash de una contraseña que nadie conoce. Se verifica cuando el correo no existe para que la respuesta tarde lo
+    /// mismo.
     /// </summary>
     string HashReferencia { get; }
 

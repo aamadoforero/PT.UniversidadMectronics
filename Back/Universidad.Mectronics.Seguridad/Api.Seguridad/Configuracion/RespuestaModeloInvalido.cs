@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace Api.Seguridad.Configuracion;
 
 /// <summary>
-/// Respuesta de <c>[ApiController]</c> cuando el cuerpo o los parámetros no se pueden leer (JSON mal formado, tipos
-/// incorrectos o cuerpo vacío). Usa el mismo formato Problem Details del resto de la API, con <c>codigo</c> y <c>errores</c>,
-/// y mensajes en español en lugar de los mensajes técnicos del deserializador.
+/// Respuesta Problem Details cuando el cuerpo o los parámetros de la petición no se pueden leer.
 /// </summary>
 public static class RespuestaModeloInvalido
 {

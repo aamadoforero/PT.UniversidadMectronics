@@ -3,7 +3,7 @@ using Dominio.Seguridad.Entidades;
 namespace Aplicacion.Seguridad.Interfaces;
 
 /// <summary>
-/// Acceso a los roles con sus permisos (patrón Repository). Lo implementa Infraestructura con Entity Framework.
+/// Acceso a los roles con sus permisos.
 /// </summary>
 public interface IRepositorioRoles
 {

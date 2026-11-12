@@ -5,8 +5,7 @@ using FluentValidation;
 namespace Aplicacion.Seguridad.Validadores;
 
 /// <summary>
-/// Reglas de FluentValidation que se repiten en varios DTOs. Cada una reutiliza el objeto de valor del dominio, así la regla
-/// de formato se define una sola vez y los mensajes son iguales en todos los formularios.
+/// Reglas de validación comunes a varios DTOs, basadas en los objetos de valor del dominio.
 /// </summary>
 public static class ExtensionesReglasValidacion
 {

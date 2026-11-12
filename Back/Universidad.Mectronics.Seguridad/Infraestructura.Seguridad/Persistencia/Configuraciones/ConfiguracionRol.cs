@@ -5,8 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Infraestructura.Seguridad.Persistencia.Configuraciones;
 
 /// <summary>
-/// Mapeo de <see cref="Rol"/> a la tabla <c>Seguridad.Rol</c> y de su relación muchos a muchos con
-/// <see cref="Permiso"/> a través de la tabla <c>Seguridad.RolPermiso</c>, que no tiene clase en el dominio.
+/// Mapeo de <see cref="Rol"/> a la tabla <c>Seguridad.Rol</c> y de sus permisos a <c>Seguridad.RolPermiso</c>.
 /// </summary>
 internal sealed class ConfiguracionRol : IEntityTypeConfiguration<Rol>
 {

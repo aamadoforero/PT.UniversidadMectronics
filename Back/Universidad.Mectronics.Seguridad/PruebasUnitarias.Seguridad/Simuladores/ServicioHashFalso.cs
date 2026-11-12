@@ -3,8 +3,7 @@ using Aplicacion.Seguridad.Interfaces;
 namespace PruebasUnitarias.Seguridad.Simuladores;
 
 /// <summary>
-/// Hash simulado y legible (<c>hash:{contraseña}</c>), para que la prueba sepa qué se guardó. Registra cada verificación
-/// para comprobar, por ejemplo, que el inicio de sesión verifica contra el hash de referencia cuando el correo no existe.
+/// Hash simulado (<c>hash:{contraseña}</c>) que registra las verificaciones realizadas.
 /// </summary>
 public sealed class ServicioHashFalso : IServicioHashContrasena
 {

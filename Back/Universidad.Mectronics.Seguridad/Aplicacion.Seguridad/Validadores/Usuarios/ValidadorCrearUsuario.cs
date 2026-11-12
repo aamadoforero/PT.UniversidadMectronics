@@ -3,15 +3,10 @@ using FluentValidation;
 
 namespace Aplicacion.Seguridad.Validadores.Usuarios;
 
-/// <summary>
-/// Reglas de formato para crear una cuenta. Qué datos académicos son obligatorios depende del tipo de perfil del rol, que
-/// se conoce al consultar la base de datos; por eso esa parte la verifica el servicio.
-/// </summary>
+/// <summary>Reglas de formato para crear una cuenta.</summary>
 public sealed class ValidadorCrearUsuario : AbstractValidator<CrearUsuarioDto>
 {
-    /// <summary>
-    /// Define las reglas de cada campo.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="ValidadorCrearUsuario"/>.</summary>
     public ValidadorCrearUsuario()
     {
         RuleFor(datos => datos.NombreCompleto).ValidarNombreCompleto();

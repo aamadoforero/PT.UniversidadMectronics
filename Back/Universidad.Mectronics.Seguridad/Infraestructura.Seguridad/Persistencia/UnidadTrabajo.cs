@@ -9,8 +9,7 @@ using Universidad.Mectronics.Transversal.Resultados;
 namespace Infraestructura.Seguridad.Persistencia;
 
 /// <summary>
-/// Implementación de <see cref="IUnidadTrabajo"/> sobre <see cref="ContextoSeguridad"/>. Hay una instancia por petición y la
-/// comparte con los repositorios, así que todos los cambios de un caso de uso se confirman juntos.
+/// Implementación de <see cref="IUnidadTrabajo"/> sobre <see cref="ContextoSeguridad"/>.
 /// </summary>
 /// <param name="contexto">Contexto de la petición en curso.</param>
 internal sealed class UnidadTrabajo(ContextoSeguridad contexto) : IUnidadTrabajo

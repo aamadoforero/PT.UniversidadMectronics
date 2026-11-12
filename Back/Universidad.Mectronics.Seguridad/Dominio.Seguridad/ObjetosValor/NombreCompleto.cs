@@ -4,17 +4,14 @@ using Dominio.Seguridad.Excepciones;
 namespace Dominio.Seguridad.ObjetosValor;
 
 /// <summary>
-/// Nombre completo de una persona, sin espacios en los extremos y con los espacios internos repetidos colapsados en uno.
-/// Es el único dato visible para los compañeros de clase. Si existe una instancia, el valor ya es válido.
+/// Nombre completo de una persona, sin espacios repetidos ni en los extremos.
 /// </summary>
 public sealed record NombreCompleto
 {
     /// <summary>Longitud máxima del nombre (columna <c>NVARCHAR(150)</c>).</summary>
     public const int LongitudMaxima = 150;
 
-    /// <summary>
-    /// Crea la instancia con un valor ya normalizado y validado. Es privado para obligar a usar <see cref="Crear"/> o <see cref="TryCrear"/>.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="NombreCompleto"/>.</summary>
     /// <param name="valor">Nombre normalizado.</param>
     private NombreCompleto(string valor) => Valor = valor;
 

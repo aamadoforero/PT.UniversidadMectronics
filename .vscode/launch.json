@@ -1,0 +1,70 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Logs (:5092)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/Back/Universidad.Mectronics.Logs/Api.Logs/bin/Debug/net10.0/Api.Logs.dll",
+      "cwd": "${workspaceFolder}/Back/Universidad.Mectronics.Logs/Api.Logs",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5092"
+      },
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": "Seguridad (:5090)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/Back/Universidad.Mectronics.Seguridad/Api.Seguridad/bin/Debug/net10.0/Api.Seguridad.dll",
+      "cwd": "${workspaceFolder}/Back/Universidad.Mectronics.Seguridad/Api.Seguridad",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5090"
+      },
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": "Académico (:5091)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/Back/Universidad.Mectronics.Academico/Api.Academico/bin/Debug/net10.0/Api.Academico.dll",
+      "cwd": "${workspaceFolder}/Back/Universidad.Mectronics.Academico/Api.Academico",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5091"
+      },
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": "Gateway (:5080)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/Back/Universidad.Mectronics.Gateway/Api.Gateway/bin/Debug/net10.0/Api.Gateway.dll",
+      "cwd": "${workspaceFolder}/Back/Universidad.Mectronics.Gateway/Api.Gateway",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5080"
+      },
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Todos los microservicios",
+      "configurations": [
+        "Logs (:5092)",
+        "Seguridad (:5090)",
+        "Académico (:5091)",
+        "Gateway (:5080)"
+      ],
+      "preLaunchTask": "compilar: todos",
+      "stopAll": true
+    }
+  ]
+}

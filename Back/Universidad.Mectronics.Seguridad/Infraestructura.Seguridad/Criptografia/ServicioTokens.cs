@@ -12,9 +12,8 @@ using Universidad.Mectronics.Transversal.Autenticacion;
 namespace Infraestructura.Seguridad.Criptografia;
 
 /// <summary>
-/// Implementación de <see cref="IServicioTokens"/> con JWT. El token de acceso se firma con RS256 y lo verifica cualquier
-/// microservicio con la clave pública; el de renovación se firma con HMAC-SHA256 y solo lo verifica Seguridad. Ninguno se
-/// guarda en la base de datos: ambos llevan una huella de la contraseña que los invalida cuando la contraseña cambia.
+/// Implementación de <see cref="IServicioTokens"/> con JWT: el token de acceso se firma con RS256 y el de renovación
+/// con HMAC-SHA256.
 /// </summary>
 /// <param name="proveedorClaves">Claves y configuración de los tokens.</param>
 /// <param name="reloj">Hora actual en UTC, para las fechas de emisión y vencimiento.</param>

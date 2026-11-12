@@ -3,34 +3,34 @@ using Dominio.Seguridad.Excepciones;
 namespace Dominio.Seguridad.Entidades;
 
 /// <summary>
-/// Datos institucionales de una cuenta cuyo rol tiene <see cref="TipoPerfil.Profesor"/>
-/// (tabla <c>Academico.Profesor</c>). Pertenece al agregado <see cref="Usuario"/>, así que solo se crea y modifica
-/// a través de la cuenta; la categoría es solo una referencia por identificador.
+/// Datos institucionales de una cuenta con <see cref="TipoPerfil.Profesor"/>. Pertenece al agregado
+/// <see cref="Usuario"/>.
 /// </summary>
 public sealed class PerfilProfesor
 {
-    /// <summary>Constructor requerido por Entity Framework para materializar el registro.</summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PerfilProfesor"/>.</summary>
     private PerfilProfesor()
     {
     }
 
-    /// <summary>
-    /// Crea el perfil. Solo lo usa <see cref="Usuario.CrearProfesor"/>.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PerfilProfesor"/>.</summary>
     /// <param name="categoriaId">Categoría de vinculación del profesor.</param>
     internal PerfilProfesor(byte categoriaId)
     {
         Actualizar(categoriaId);
     }
 
-    /// <summary>Identificador generado por la base de datos (PK).</summary>
+    /// <summary>Identificador.</summary>
     public int Id { get; private set; }
 
-    /// <summary>Cuenta a la que pertenece el perfil (relación 1 a 1). Lo asigna Entity Framework al guardar.</summary>
+    /// <summary>Cuenta a la que pertenece el perfil.</summary>
     public int UsuarioId { get; private set; }
 
-    /// <summary>Categoría de vinculación: Planta, Cátedra u Ocasional (FK a <c>Academico.CategoriaProfesor</c>).</summary>
+    /// <summary>Categoría de vinculación: Planta, Cátedra u Ocasional.</summary>
     public byte CategoriaId { get; private set; }
+
+    /// <summary>Categoría de vinculación; es <see langword="null"/> en un perfil recién creado.</summary>
+    public CategoriaProfesor? Categoria { get; private set; }
 
     /// <summary>
     /// Cambia la categoría después de validarla.

@@ -1,4 +1,4 @@
-# Convenciones de código del backend. Se aplican al compilar gracias a EnforceCodeStyleInBuild en cada proyecto.
+# Convenciones de código del backend (se aplican al compilar con EnforceCodeStyleInBuild).
 root = true
 
 [*.cs]

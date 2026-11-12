@@ -4,4 +4,5 @@ namespace Aplicacion.Seguridad.Dtos.CuentaPropia;
 /// Datos académicos de una cuenta cuyo rol tiene perfil de profesor.
 /// </summary>
 /// <param name="CategoriaId">Categoría de vinculación: Planta, Cátedra u Ocasional.</param>
-public sealed record PerfilProfesorDto(byte CategoriaId);
+/// <param name="NombreCategoria">Nombre de la categoría, para mostrarlo sin consultar el catálogo.</param>
+public sealed record PerfilProfesorDto(byte CategoriaId, string? NombreCategoria);

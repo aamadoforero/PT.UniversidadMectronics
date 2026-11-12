@@ -1,8 +1,7 @@
 namespace Aplicacion.Seguridad.Dtos.Usuarios;
 
 /// <summary>
-/// Datos para editar una cuenta. El rol no se cambia aquí; tiene su propia operación porque afecta el acceso.
-/// Los datos académicos que se exigen dependen del tipo de perfil del rol actual de la cuenta.
+/// Datos para editar una cuenta. Los datos académicos que se exigen dependen del tipo de perfil del rol de la cuenta.
 /// </summary>
 /// <param name="NombreCompleto">Nombre completo.</param>
 /// <param name="Identificacion">Documento de identidad.</param>

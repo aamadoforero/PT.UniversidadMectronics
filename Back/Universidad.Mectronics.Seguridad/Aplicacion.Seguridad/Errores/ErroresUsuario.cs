@@ -1,5 +1,4 @@
 using Aplicacion.Seguridad.Dtos.Usuarios;
-using Dominio.Seguridad.Entidades;
 using Universidad.Mectronics.Transversal.Resultados;
 
 namespace Aplicacion.Seguridad.Errores;
@@ -20,8 +19,7 @@ public static class ErroresUsuario
         detalles);
 
     /// <summary>
-    /// Crea el error para una cuenta inexistente. También se usa para la cuenta protegida del superadministrador, para no
-    /// revelar que existe.
+    /// Crea el error para una cuenta inexistente.
     /// </summary>
     /// <param name="id">Identificador buscado.</param>
     /// <returns>El error de recurso inexistente.</returns>
@@ -67,14 +65,6 @@ public static class ErroresUsuario
         "No tiene permiso para realizar esta operación.");
 
     /// <summary>
-    /// Crea el error para un intento de asignar el rol de superadministración, que solo asigna el script de la base de datos.
-    /// </summary>
-    /// <returns>El error de falta de permiso.</returns>
-    public static Error CrearRolNoAsignable() => Error.CrearProhibido(
-        "Usuario.RolNoAsignable",
-        "El rol de superadministración no se puede asignar desde la aplicación.");
-
-    /// <summary>
     /// Crea el error para una operación que el actor intenta sobre su propia cuenta y que no está permitida.
     /// </summary>
     /// <param name="descripcion">Explicación de qué no puede hacer y qué alternativa tiene.</param>
@@ -82,14 +72,4 @@ public static class ErroresUsuario
     public static Error CrearOperacionSobreCuentaPropia(string descripcion) => Error.CrearConflicto(
         "Usuario.OperacionSobreCuentaPropia",
         descripcion);
-
-    /// <summary>
-    /// Crea el error para un cambio hacia un rol con otro tipo de perfil, que haría perder los datos académicos.
-    /// </summary>
-    /// <param name="actual">Tipo de perfil del rol actual.</param>
-    /// <param name="nuevo">Tipo de perfil del rol solicitado.</param>
-    /// <returns>El error de conflicto.</returns>
-    public static Error CrearCambioRolNoPermitido(TipoPerfil actual, TipoPerfil nuevo) => Error.CrearConflicto(
-        "Usuario.CambioRolNoPermitido",
-        $"Solo se puede cambiar a un rol con el mismo tipo de perfil (actual: {actual}, solicitado: {nuevo}).");
 }

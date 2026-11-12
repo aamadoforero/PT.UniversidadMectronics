@@ -5,15 +5,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Infraestructura.Seguridad.Persistencia.Repositorios;
 
 /// <summary>
-/// Implementación de <see cref="IRepositorioRoles"/> con Entity Framework. Los permisos se cargan siempre con el rol
-/// (configurado en <c>ConfiguracionRol</c>).
+/// Implementación de <see cref="IRepositorioRoles"/> con Entity Framework.
 /// </summary>
 /// <param name="contexto">Contexto de la petición en curso.</param>
 internal sealed class RepositorioRoles(ContextoSeguridad contexto) : IRepositorioRoles
 {
-    /// <summary>
-    /// Obtiene un rol con sus permisos. Queda en seguimiento, porque puede asignarse a una cuenta en el mismo caso de uso.
-    /// </summary>
+    /// <summary>Obtiene un rol con sus permisos, con seguimiento de cambios.</summary>
     /// <param name="id">Identificador del rol.</param>
     /// <param name="cancelacion">Permite cancelar la consulta si la petición se abandona.</param>
     /// <returns>El rol, o <see langword="null"/> si no existe.</returns>

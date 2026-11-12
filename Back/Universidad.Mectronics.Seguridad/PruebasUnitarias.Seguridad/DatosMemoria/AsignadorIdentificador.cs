@@ -1,8 +1,7 @@
 namespace PruebasUnitarias.Seguridad.DatosMemoria;
 
 /// <summary>
-/// Asigna el identificador a una entidad, como lo haría la base de datos al guardarla. Las entidades lo protegen con un
-/// <c>private set</c>, así que solo las pruebas lo asignan, mediante reflexión.
+/// Asigna por reflexión el identificador de una entidad, como lo haría la base de datos al guardarla.
 /// </summary>
 public static class AsignadorIdentificador
 {

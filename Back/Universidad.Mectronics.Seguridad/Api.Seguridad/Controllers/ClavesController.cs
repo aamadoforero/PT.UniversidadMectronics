@@ -15,9 +15,7 @@ namespace Api.Seguridad.Controllers;
 [AllowAnonymous]
 public sealed class ClavesController(ProveedorClavesJwt proveedorClaves) : SeguridadControllerBase
 {
-    /// <summary>
-    /// Devuelve las claves públicas en formato JWKS. Solo incluye los parámetros públicos (n, e); nunca la parte privada.
-    /// </summary>
+    /// <summary>Devuelve las claves públicas en formato JWKS.</summary>
     /// <returns>200 con el conjunto de claves.</returns>
     [HttpGet("jwks.json")]
     [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]

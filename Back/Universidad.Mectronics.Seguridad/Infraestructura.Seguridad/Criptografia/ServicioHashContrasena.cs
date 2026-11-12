@@ -4,24 +4,20 @@ using Microsoft.AspNetCore.Identity;
 namespace Infraestructura.Seguridad.Criptografia;
 
 /// <summary>
-/// Implementación de <see cref="IServicioHashContrasena"/> con el <see cref="PasswordHasher{TUser}"/> de ASP.NET Core:
-/// PBKDF2-HMAC-SHA512 con 100.000 iteraciones y una sal aleatoria de 16 bytes por contraseña. Es el mismo formato de los
-/// hashes sembrados por <c>Database/DML.sql</c>.
+/// Implementación de <see cref="IServicioHashContrasena"/> con el <see cref="PasswordHasher{TUser}"/> de ASP.NET Core
+/// (PBKDF2).
 /// </summary>
 internal sealed class ServicioHashContrasena : IServicioHashContrasena
 {
     /// <summary>
-    /// El algoritmo no usa los datos del usuario; se pasa este objeto vacío porque la firma de <see cref="PasswordHasher{TUser}"/>
-    /// lo exige.
+    /// Usuario vacío que exige la firma de <see cref="PasswordHasher{TUser}"/>.
     /// </summary>
     private static readonly object UsuarioSinDatos = new();
 
     /// <summary>Implementación de ASP.NET Core que calcula y verifica los hashes.</summary>
     private readonly PasswordHasher<object> _hasher = new();
 
-    /// <summary>
-    /// Crea el servicio y calcula una sola vez el hash de referencia, a partir de una contraseña aleatoria que nadie conoce.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="ServicioHashContrasena"/>.</summary>
     public ServicioHashContrasena()
     {
         HashReferencia = _hasher.HashPassword(UsuarioSinDatos, Guid.NewGuid().ToString("N"));

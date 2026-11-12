@@ -16,7 +16,7 @@ namespace Api.Seguridad.Controllers;
 public sealed class CatalogosController(IServicioCatalogos servicio) : SeguridadControllerBase
 {
     /// <summary>
-    /// Obtiene los roles asignables (sin el de superadministración), con su tipo de perfil.
+    /// Obtiene los roles asignables, con su tipo de perfil.
     /// </summary>
     /// <param name="cancelacion">Cancelación de la petición.</param>
     /// <returns>200 con los roles, o 403 sin permiso.</returns>

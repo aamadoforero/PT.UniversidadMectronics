@@ -26,5 +26,11 @@ internal sealed class ConfiguracionPerfilEstudiante : IEntityTypeConfiguration<P
 
         builder.HasIndex(perfil => perfil.UsuarioId).IsUnique().HasDatabaseName("UQ_Estudiante_UsuarioId");
         builder.HasIndex(perfil => perfil.ProgramaId).HasDatabaseName("IX_Estudiante_ProgramaId");
+
+        builder.HasOne(perfil => perfil.Programa)
+            .WithMany()
+            .HasForeignKey(perfil => perfil.ProgramaId)
+            .HasConstraintName("FK_Estudiante_Programa");
+        builder.Navigation(perfil => perfil.Programa).AutoInclude();
     }
 }

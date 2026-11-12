@@ -4,23 +4,14 @@ using Universidad.Mectronics.Transversal.Resultados;
 namespace Aplicacion.Seguridad.Servicios.Usuarios;
 
 /// <summary>
-/// Casos de uso que controlan el acceso de una cuenta al sistema: su rol, su estado y su contraseña. Exigen los permisos
-/// <c>usuarios.cambiar-rol</c>, <c>usuarios.cambiar-estado</c> y <c>usuarios.restablecer-contrasena</c>. La cuenta del
-/// superadministrador está protegida y no se ve afectada.
+/// Casos de uso que controlan el acceso de una cuenta: su estado y su contraseña. No se permiten sobre la propia
+/// cuenta.
 /// </summary>
 public interface IServicioAccesoUsuarios
 {
     /// <summary>
-    /// Cambia el rol de una cuenta hacia otro con el mismo tipo de perfil.
-    /// </summary>
-    /// <param name="id">Identificador de la cuenta.</param>
-    /// <param name="datos">Rol nuevo.</param>
-    /// <param name="cancelacion">Permite cancelar la operación si la petición se abandona.</param>
-    /// <returns>La cuenta actualizada, o un error.</returns>
-    Task<Resultado<UsuarioDetalleDto>> CambiarRolAsync(int id, CambiarRolDto datos, CancellationToken cancelacion);
-
-    /// <summary>
-    /// Activa o desactiva una cuenta. Una cuenta desactivada no puede iniciar sesión y sus sesiones dejan de renovarse.
+    /// Activa o desactiva una cuenta. Una cuenta desactivada no puede iniciar sesión y sus sesiones dejan de renovarse; si es
+    /// un estudiante, se cancelan sus inscripciones vigentes.
     /// </summary>
     /// <param name="id">Identificador de la cuenta.</param>
     /// <param name="datos">Estado nuevo.</param>

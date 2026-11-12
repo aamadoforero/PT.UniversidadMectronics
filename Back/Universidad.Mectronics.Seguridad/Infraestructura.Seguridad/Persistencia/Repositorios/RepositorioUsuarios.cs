@@ -1,6 +1,5 @@
 using Aplicacion.Seguridad.Dtos.Usuarios;
 using Aplicacion.Seguridad.Interfaces;
-using Dominio.Seguridad.Autorizacion;
 using Dominio.Seguridad.Entidades;
 using Dominio.Seguridad.ObjetosValor;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +8,8 @@ using Universidad.Mectronics.Transversal.Paginacion;
 namespace Infraestructura.Seguridad.Persistencia.Repositorios;
 
 /// <summary>
-/// Implementación de <see cref="IRepositorioUsuarios"/> con Entity Framework. Cada cuenta se carga completa: con su rol, los
-/// permisos del rol y su perfil académico (configurado con <c>AutoInclude</c>). Los objetos de valor se guardan con
-/// conversores, y EF no traduce a SQL el acceso a <c>.Valor</c> de una propiedad convertida; sí traduce
-/// <c>(string)(object)propiedad</c>, por eso la búsqueda con <c>LIKE</c> usa esa forma. El orden se hace sobre la propiedad
-/// directamente, porque la conversión genera un <c>CAST</c> que impediría usar el índice.
+/// Implementación de <see cref="IRepositorioUsuarios"/> con Entity Framework. La búsqueda usa
+/// <c>(string)(object)propiedad</c> porque EF no traduce <c>.Valor</c> en las propiedades convertidas.
 /// </summary>
 /// <param name="contexto">Contexto de la petición en curso.</param>
 internal sealed class RepositorioUsuarios(ContextoSeguridad contexto) : IRepositorioUsuarios
@@ -64,8 +60,7 @@ internal sealed class RepositorioUsuarios(ContextoSeguridad contexto) : IReposit
             cancelacion);
 
     /// <summary>
-    /// Busca cuentas con los criterios del filtro, ordenadas por nombre, y devuelve la página solicitada. Excluye siempre la
-    /// cuenta protegida del superadministrador.
+    /// Busca cuentas con los criterios del filtro, ordenadas por nombre, y devuelve la página solicitada.
     /// </summary>
     /// <param name="filtro">Criterios de búsqueda y paginación.</param>
     /// <param name="cancelacion">Permite cancelar la consulta si la petición se abandona.</param>
@@ -74,9 +69,7 @@ internal sealed class RepositorioUsuarios(ContextoSeguridad contexto) : IReposit
     {
         ArgumentNullException.ThrowIfNull(filtro);
 
-        IQueryable<Usuario> consulta = contexto.Usuarios
-            .AsNoTracking()
-            .Where(usuario => !usuario.Rol.Permisos.Any(permiso => permiso.Codigo == CodigosPermisoSuperAdministradores.Gestionar));
+        IQueryable<Usuario> consulta = contexto.Usuarios.AsNoTracking();
 
         if (filtro.Texto is not null)
         {

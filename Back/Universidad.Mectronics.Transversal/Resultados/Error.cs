@@ -1,9 +1,8 @@
 namespace Universidad.Mectronics.Transversal.Resultados;
 
 /// <summary>
-/// Error esperado de un caso de uso. Es un valor (no una excepción): se devuelve dentro de un <see cref="Resultado"/>.
-/// El código sigue el formato <c>Entidad.Error</c> (por ejemplo, <c>Usuario.EmailDuplicado</c>) para que el frontend reaccione
-/// sin depender del texto; la descripción es apta para mostrar al usuario.
+/// Error esperado de un caso de uso. El código tiene el formato <c>Entidad.Error</c> y la descripción se muestra al
+/// usuario.
 /// </summary>
 /// <param name="Codigo">Identificador estable del error, con formato <c>Entidad.Error</c>.</param>
 /// <param name="Descripcion">Mensaje legible para el usuario.</param>
@@ -59,6 +58,14 @@ public sealed record Error(
     /// <param name="descripcion">Mensaje para el usuario.</param>
     /// <returns>El error de tipo <see cref="TipoError.Conflicto"/>.</returns>
     public static Error CrearConflicto(string codigo, string descripcion) => new(codigo, descripcion, TipoError.Conflicto);
+
+    /// <summary>
+    /// Crea un error por exceso de intentos, que obliga a esperar antes de repetir la operación.
+    /// </summary>
+    /// <param name="codigo">Identificador del error, con formato <c>Entidad.Error</c>.</param>
+    /// <param name="descripcion">Mensaje para el usuario.</param>
+    /// <returns>El error de tipo <see cref="TipoError.DemasiadosIntentos"/>.</returns>
+    public static Error CrearDemasiadosIntentos(string codigo, string descripcion) => new(codigo, descripcion, TipoError.DemasiadosIntentos);
 
     /// <summary>
     /// Crea un error inesperado de la operación.

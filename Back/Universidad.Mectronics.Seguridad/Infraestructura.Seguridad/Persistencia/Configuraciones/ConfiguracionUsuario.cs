@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Infraestructura.Seguridad.Persistencia.Configuraciones;
 
 /// <summary>
-/// Mapeo de <see cref="Usuario"/> a la tabla <c>Seguridad.Usuario</c> y de sus relaciones con el rol y los perfiles académicos.
-/// Los nombres de restricciones e índices coinciden con <c>Database/DDL.sql</c>.
+/// Mapeo de <see cref="Usuario"/> a la tabla <c>Seguridad.Usuario</c> y de sus relaciones con el rol y los perfiles.
 /// </summary>
 internal sealed class ConfiguracionUsuario : IEntityTypeConfiguration<Usuario>
 {

@@ -4,17 +4,14 @@ using Dominio.Seguridad.Excepciones;
 namespace Dominio.Seguridad.ObjetosValor;
 
 /// <summary>
-/// Documento de identidad de una persona. Siempre está en mayúsculas y solo contiene letras, números y guiones, para que
-/// la regla de unicidad no dependa de cómo se escribió. Si existe una instancia, el valor ya es válido.
+/// Documento de identidad en mayúsculas, con solo letras, números y guiones.
 /// </summary>
 public sealed record Identificacion
 {
     /// <summary>Longitud máxima de la identificación (columna <c>NVARCHAR(50)</c>).</summary>
     public const int LongitudMaxima = 50;
 
-    /// <summary>
-    /// Crea la instancia con un valor ya normalizado y validado. Es privado para obligar a usar <see cref="Crear"/> o <see cref="TryCrear"/>.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Identificacion"/>.</summary>
     /// <param name="valor">Identificación normalizada.</param>
     private Identificacion(string valor) => Valor = valor;
 

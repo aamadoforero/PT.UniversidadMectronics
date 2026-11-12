@@ -10,9 +10,7 @@ using Universidad.Mectronics.Transversal.Resultados;
 
 namespace Api.Seguridad.Controllers;
 
-/// <summary>
-/// Propia cuenta (<c>/api/seguridad/cuenta</c>). Siempre actúa sobre la cuenta de la sesión, por eso no recibe un identificador.
-/// </summary>
+/// <summary>Cuenta del usuario autenticado: perfil y cambio de contraseña.</summary>
 /// <param name="servicio">Caso de uso de la propia cuenta.</param>
 /// <param name="cookies">Gestor de las cookies de sesión.</param>
 [Route("api/seguridad/cuenta")]
@@ -31,18 +29,6 @@ public sealed class CuentaController(IServicioCuentaPropia servicio, GestorCooki
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> ObtenerPerfilAsync(CancellationToken cancelacion) =>
         ConvertirARespuesta(await servicio.ObtenerPerfilAsync(cancelacion));
-
-    /// <summary>
-    /// Actualiza el nombre de la cuenta de la sesión, que es el único dato que el usuario puede editar de sí mismo.
-    /// </summary>
-    /// <param name="datos">Nombre nuevo.</param>
-    /// <param name="cancelacion">Cancelación de la petición.</param>
-    /// <returns>200 con el perfil actualizado, o 400 por datos inválidos.</returns>
-    [HttpPut("perfil")]
-    [ProducesResponseType<PerfilDto>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> ActualizarDatosPersonalesAsync(ActualizarDatosPersonalesDto datos, CancellationToken cancelacion) =>
-        ConvertirARespuesta(await servicio.ActualizarDatosPersonalesAsync(datos, cancelacion));
 
     /// <summary>
     /// Cambia la contraseña verificando la actual. Las sesiones anteriores quedan invalidadas y se escriben cookies nuevas.

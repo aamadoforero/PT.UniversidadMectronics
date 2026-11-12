@@ -5,14 +5,12 @@ using Dominio.Seguridad.Politicas;
 namespace Dominio.Seguridad.Entidades;
 
 /// <summary>
-/// Cuenta de acceso al sistema (tabla <c>Seguridad.Usuario</c>) y raíz del agregado de Seguridad. Garantiza que el perfil
-/// académico corresponda al tipo de perfil del rol, el bloqueo por intentos fallidos y el ciclo de vida de la contraseña.
-/// Sus datos de identidad son objetos de valor que ya llegan validados. No lee el reloj: todas las operaciones reciben
-/// la fecha actual en UTC.
+/// Cuenta de acceso al sistema y raíz del agregado de Seguridad. Controla el perfil académico, el bloqueo por intentos
+/// fallidos y la contraseña.
 /// </summary>
 public sealed class Usuario
 {
-    /// <summary>Constructor requerido por Entity Framework para materializar el registro.</summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Usuario"/>.</summary>
     private Usuario()
     {
         NombreCompleto = null!;
@@ -22,10 +20,7 @@ public sealed class Usuario
         Rol = null!;
     }
 
-    /// <summary>
-    /// Inicializa los datos comunes a toda cuenta nueva: activa, con contraseña temporal y sin intentos fallidos.
-    /// Lo usan las fábricas, que antes validan que el rol corresponda.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Usuario"/>.</summary>
     /// <param name="nombreCompleto">Nombre completo.</param>
     /// <param name="identificacion">Documento de identidad.</param>
     /// <param name="email">Correo de inicio de sesión.</param>
@@ -52,7 +47,7 @@ public sealed class Usuario
         FechaCreacion = ahoraUtc;
     }
 
-    /// <summary>Identificador generado por la base de datos (PK).</summary>
+    /// <summary>Identificador.</summary>
     public int Id { get; private set; }
 
     /// <summary>Nombre completo. Es el único dato visible para los compañeros de clase.</summary>
@@ -67,7 +62,7 @@ public sealed class Usuario
     /// <summary>Hash de la contraseña. El dominio nunca conoce la contraseña en texto plano.</summary>
     public string Contrasena { get; private set; }
 
-    /// <summary>Identificador del rol asignado (columna <c>RoleId</c>).</summary>
+    /// <summary>Identificador del rol asignado.</summary>
     public byte RolId { get; private set; }
 
     /// <summary>Rol asignado, con sus permisos y su tipo de perfil.</summary>
@@ -188,15 +183,13 @@ public sealed class Usuario
 
     /// <summary>
     /// Indica si la cuenta puede iniciar sesión: debe estar activa y no bloqueada.
-    /// No verifica la contraseña; eso lo hace la capa de Aplicación con el servicio de hash.
     /// </summary>
     /// <param name="ahoraUtc">Fecha y hora actual en UTC.</param>
     /// <returns><see langword="true"/> si la cuenta está activa y sin bloqueo vigente.</returns>
     public bool PuedeIniciarSesion(DateTimeOffset ahoraUtc) => Activo && !EstaBloqueado(ahoraUtc);
 
     /// <summary>
-    /// Registra un intento de inicio de sesión fallido y bloquea la cuenta al alcanzar el máximo de la política.
-    /// Mientras la cuenta está bloqueada no cuenta intentos, y cuando el bloqueo vence el conteo vuelve a cero.
+    /// Registra un inicio de sesión fallido y bloquea la cuenta al alcanzar el máximo de la política.
     /// </summary>
     /// <param name="ahoraUtc">Fecha y hora actual en UTC.</param>
     /// <param name="politica">Máximo de intentos y duración del bloqueo.</param>
@@ -248,18 +241,6 @@ public sealed class Usuario
         Contrasena = ValidarHash(hashTemporal);
         DebeCambiarContrasena = true;
         ReiniciarBloqueo();
-        RegistrarModificacion(ahoraUtc);
-    }
-
-    /// <summary>
-    /// Actualiza los datos que el propio usuario puede modificar desde su perfil (solo el nombre).
-    /// </summary>
-    /// <param name="nombreCompleto">Nombre completo nuevo.</param>
-    /// <param name="ahoraUtc">Fecha y hora actual en UTC.</param>
-    public void ActualizarDatosPersonales(NombreCompleto nombreCompleto, DateTimeOffset ahoraUtc)
-    {
-        ArgumentNullException.ThrowIfNull(nombreCompleto);
-        NombreCompleto = nombreCompleto;
         RegistrarModificacion(ahoraUtc);
     }
 
@@ -317,27 +298,6 @@ public sealed class Usuario
         }
 
         PerfilProfesor.Actualizar(categoriaId);
-        RegistrarModificacion(ahoraUtc);
-    }
-
-    /// <summary>
-    /// Cambia el rol de la cuenta. Solo se permite hacia un rol con el mismo <see cref="TipoPerfil"/>, para que
-    /// el perfil académico y su historial (inscripciones o materias) se conserven intactos.
-    /// Por ejemplo: Estudiante a Monitor sí; Administrador a Coordinador sí; Estudiante a Profesor no.
-    /// </summary>
-    /// <param name="nuevoRol">Rol que se asignará.</param>
-    /// <param name="ahoraUtc">Fecha y hora actual en UTC.</param>
-    public void CambiarRol(Rol nuevoRol, DateTimeOffset ahoraUtc)
-    {
-        ArgumentNullException.ThrowIfNull(nuevoRol);
-        if (nuevoRol.TipoPerfil != Rol.TipoPerfil)
-        {
-            throw new ExcepcionDominio(
-                $"No se puede cambiar de un rol con perfil '{Rol.TipoPerfil}' a uno con perfil '{nuevoRol.TipoPerfil}'.");
-        }
-
-        Rol = nuevoRol;
-        RolId = nuevoRol.Id;
         RegistrarModificacion(ahoraUtc);
     }
 

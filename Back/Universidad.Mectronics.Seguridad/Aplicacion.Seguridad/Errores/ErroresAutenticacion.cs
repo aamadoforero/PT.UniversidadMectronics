@@ -8,13 +8,27 @@ namespace Aplicacion.Seguridad.Errores;
 public static class ErroresAutenticacion
 {
     /// <summary>
-    /// Credenciales rechazadas. Se usa el mismo error para correo inexistente, contraseña incorrecta, cuenta inactiva y
-    /// cuenta bloqueada, para no revelar a un atacante qué correos están registrados ni el estado de una cuenta.
+    /// Credenciales rechazadas. Es el mismo error para correo inexistente, contraseña incorrecta y cuenta inactiva.
     /// </summary>
     /// <returns>El error de tipo no autorizado.</returns>
     public static Error CrearCredencialesInvalidas() => Error.CrearNoAutorizado(
         "Autenticacion.CredencialesInvalidas",
         "El correo o la contraseña no son correctos.");
+
+    /// <summary>
+    /// Cuenta bloqueada temporalmente por superar el máximo de intentos fallidos. Se responde con HTTP 429 mientras el
+    /// bloqueo esté vigente, aunque la contraseña sea correcta.
+    /// </summary>
+    /// <param name="duracionBloqueo">Duración del bloqueo según la política, para indicar cuánto esperar.</param>
+    /// <returns>El error de tipo demasiados intentos.</returns>
+    public static Error CrearCuentaBloqueada(TimeSpan duracionBloqueo)
+    {
+        int minutos = (int)Math.Ceiling(duracionBloqueo.TotalMinutes);
+        string espera = minutos == 1 ? "1 minuto" : $"{minutos} minutos";
+        return Error.CrearDemasiadosIntentos(
+            "Autenticacion.CuentaBloqueada",
+            $"Demasiados intentos de inicio de sesión. Si se equivocó varias veces, espere {espera} antes de intentar de nuevo.");
+    }
 
     /// <summary>
     /// Token de renovación ausente, vencido, alterado, de una cuenta inactiva o emitido antes de un cambio de contraseña.

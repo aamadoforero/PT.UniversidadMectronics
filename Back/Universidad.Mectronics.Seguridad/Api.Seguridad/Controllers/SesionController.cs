@@ -14,8 +14,7 @@ using Universidad.Mectronics.Transversal.Resultados;
 namespace Api.Seguridad.Controllers;
 
 /// <summary>
-/// Sesión (<c>/api/seguridad/sesion</c>): iniciar, renovar y cerrar. Las acciones son anónimas porque se usan sin sesión o con
-/// el token de acceso vencido; los tokens viajan en cookies <c>HttpOnly</c>.
+/// Inicio, renovación y cierre de sesión. Los tokens viajan en cookies <c>HttpOnly</c>.
 /// </summary>
 /// <param name="servicio">Caso de uso de autenticación.</param>
 /// <param name="cookies">Gestor de las cookies de sesión.</param>
@@ -26,12 +25,12 @@ namespace Api.Seguridad.Controllers;
 public sealed class SesionController(IServicioAutenticacion servicio, GestorCookiesSesion cookies) : SeguridadControllerBase
 {
     /// <summary>
-    /// Inicia sesión con correo y contraseña. Si las credenciales son correctas, escribe las cookies de acceso, renovación y
-    /// CSRF. Cualquier fallo de credenciales responde el mismo 401, sin revelar si el correo existe.
+    /// Inicia sesión con correo y contraseña y escribe las cookies de acceso, renovación y CSRF.
     /// </summary>
     /// <param name="datos">Correo y contraseña.</param>
     /// <param name="cancelacion">Cancelación de la petición.</param>
-    /// <returns>200 con los datos de la cuenta, 400 por datos inválidos, 401 por credenciales inválidas o 429 por exceso de intentos.</returns>
+    /// <returns>200 con los datos de la cuenta, 400 por datos inválidos, 401 por credenciales inválidas o 429 por
+    /// exceso de intentos.</returns>
     [HttpPost]
     [OmitirValidacionCsrf]
     [EnableRateLimiting(RegistroDependenciasApi.PoliticaInicioSesion)]
@@ -48,8 +47,7 @@ public sealed class SesionController(IServicioAutenticacion servicio, GestorCook
     }
 
     /// <summary>
-    /// Renueva la sesión con el token de la cookie de renovación y emite tokens nuevos (rotación). Si no es posible, elimina
-    /// las cookies para que el frontend lleve al usuario a iniciar sesión.
+    /// Renueva la sesión con la cookie de renovación y emite tokens nuevos. Si no es posible, elimina las cookies.
     /// </summary>
     /// <param name="cancelacion">Cancelación de la petición.</param>
     /// <returns>200 con los datos de la cuenta, o 401 si la sesión ya no es válida.</returns>
@@ -69,9 +67,7 @@ public sealed class SesionController(IServicioAutenticacion servicio, GestorCook
         return Ok(cookies.EscribirSesion(Response, resultado.Valor));
     }
 
-    /// <summary>
-    /// Cierra la sesión eliminando las cookies. Los tokens no se guardan en el servidor, así que no hay nada más que revocar.
-    /// </summary>
+    /// <summary>Cierra la sesión eliminando las cookies.</summary>
     /// <returns>204 sin contenido.</returns>
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

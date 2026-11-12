@@ -7,17 +7,14 @@ using Universidad.Mectronics.Transversal.Autenticacion;
 namespace Infraestructura.Seguridad.Criptografia;
 
 /// <summary>
-/// Carga una sola vez las claves de <see cref="OpcionesJwt"/> y las ofrece listas para firmar y validar. Publica solo la
-/// parte pública de la clave RSA (JWKS), para que otros microservicios verifiquen los tokens de acceso sin poder emitirlos.
+/// Carga las claves de <see cref="OpcionesJwt"/> y publica la parte pública de la clave RSA (JWKS).
 /// </summary>
 public sealed class ProveedorClavesJwt : IDisposable
 {
     /// <summary>Clave RSA con la parte privada; solo existe en este microservicio.</summary>
     private readonly RSA _rsa;
 
-    /// <summary>
-    /// Importa las claves configuradas, que ya validó <see cref="ValidadorOpcionesJwt"/> al arrancar.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="ProveedorClavesJwt"/>.</summary>
     /// <param name="opciones">Configuración de los tokens.</param>
     public ProveedorClavesJwt(IOptions<OpcionesJwt> opciones)
     {

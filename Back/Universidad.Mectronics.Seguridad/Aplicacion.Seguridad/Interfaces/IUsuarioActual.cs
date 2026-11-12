@@ -1,8 +1,7 @@
 namespace Aplicacion.Seguridad.Interfaces;
 
 /// <summary>
-/// Identidad de quien hace la petición en curso. La implementa la API a partir de los claims del token de acceso, que ya
-/// se validó; los servicios la usan para aplicar reglas de alcance (por ejemplo, quién puede gestionar a un superadministrador).
+/// Identidad de quien hace la petición, tomada de los claims del token de acceso.
 /// </summary>
 public interface IUsuarioActual
 {

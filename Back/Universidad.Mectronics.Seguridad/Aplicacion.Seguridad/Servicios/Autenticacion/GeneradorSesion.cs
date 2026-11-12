@@ -6,8 +6,7 @@ using Dominio.Seguridad.Entidades;
 namespace Aplicacion.Seguridad.Servicios.Autenticacion;
 
 /// <summary>
-/// Arma una sesión completa (token de acceso, token de renovación y datos de la cuenta). La comparten los casos de uso que
-/// emiten sesiones: iniciar sesión, renovarla y cambiar la contraseña, que invalida los tokens anteriores.
+/// Arma una sesión: token de acceso, token de renovación y datos de la cuenta.
 /// </summary>
 /// <param name="servicioTokens">Crea los tokens firmados.</param>
 public sealed class GeneradorSesion(IServicioTokens servicioTokens)

@@ -1,17 +1,3 @@
-/* =====================================================================
-   Universidad Mectronics - DDL
-   Crea la base de datos, los esquemas, las tablas, las restricciones y
-   los índices. El script es idempotente: solo crea lo que no existe.
-
-   Convenciones:
-   - Todas las fechas usan DATETIMEOFFSET y se guardan en UTC (desfase +00:00).
-   - Todas las restricciones e índices tienen nombre explícito para que
-     coincidan en cualquier instancia (local, Azure, evaluador).
-   - Si existe una versión anterior de la base con las tablas
-     ProgramaEstudiante o MateriaPrograma, elimine la base y vuelva a
-     ejecutar DDL.sql, DML.sql y Metadata.sql en ese orden.
-   ===================================================================== */
-
 -- 1. Base de datos
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'UniversidadMectronics')
 BEGIN
@@ -236,7 +222,7 @@ BEGIN
         CONSTRAINT UQ_Materia_Programa_Nombre UNIQUE (ProgramaId, Nombre),
         CONSTRAINT FK_Materia_Programa FOREIGN KEY (ProgramaId) REFERENCES Academico.Programa (Id),
         CONSTRAINT FK_Materia_Profesor FOREIGN KEY (ProfesorId) REFERENCES Academico.Profesor (Id),
-        CONSTRAINT CK_Materia_Creditos CHECK (Creditos > 0)
+        CONSTRAINT CK_Materia_Creditos CHECK (Creditos = 3)
     );
     PRINT 'Tabla [Academico.Materia] creada.';
 END

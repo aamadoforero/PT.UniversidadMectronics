@@ -5,10 +5,7 @@ using Dominio.Seguridad.Entidades;
 
 namespace Aplicacion.Seguridad.Mapeos;
 
-/// <summary>
-/// Conversiones de la entidad <see cref="Usuario"/> a los DTOs que devuelve Aplicación. Concentra el mapeo en un solo lugar
-/// para que los DTOs sigan siendo objetos sin comportamiento y los servicios no repitan la conversión.
-/// </summary>
+/// <summary>Conversiones de <see cref="Usuario"/> a los DTOs de Aplicación.</summary>
 public static class ExtensionesMapeoUsuario
 {
     /// <summary>
@@ -96,7 +93,10 @@ public static class ExtensionesMapeoUsuario
     private static PerfilEstudianteDto? ConvertirPerfilEstudiante(Usuario usuario) =>
         usuario.PerfilEstudiante is null
             ? null
-            : new PerfilEstudianteDto(usuario.PerfilEstudiante.ProgramaId, usuario.PerfilEstudiante.UbicacionSemestral);
+            : new PerfilEstudianteDto(
+                usuario.PerfilEstudiante.ProgramaId,
+                usuario.PerfilEstudiante.Programa?.Nombre,
+                usuario.PerfilEstudiante.UbicacionSemestral);
 
     /// <summary>
     /// Convierte el perfil de profesor de la cuenta, si lo tiene.
@@ -106,5 +106,5 @@ public static class ExtensionesMapeoUsuario
     private static PerfilProfesorDto? ConvertirPerfilProfesor(Usuario usuario) =>
         usuario.PerfilProfesor is null
             ? null
-            : new PerfilProfesorDto(usuario.PerfilProfesor.CategoriaId);
+            : new PerfilProfesorDto(usuario.PerfilProfesor.CategoriaId, usuario.PerfilProfesor.Categoria?.Nombre);
 }

@@ -23,16 +23,14 @@ public sealed class PruebaUnitariaCuentaPropia
     /// <summary>Servicio bajo prueba.</summary>
     private readonly ServicioCuentaPropia _servicio;
 
-    /// <summary>
-    /// Arma el servicio con la cuenta autenticada.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PruebaUnitariaCuentaPropia"/>.</summary>
     public PruebaUnitariaCuentaPropia()
     {
         RepositorioUsuariosEnMemoria repositorio = new RepositorioUsuariosEnMemoria().Sembrar(_usuario);
         _servicio = new ServicioCuentaPropia(
             new UsuarioActualFalso().Autenticar(_usuario), repositorio, _unidadTrabajo, new ServicioHashFalso(), new RelojFijo(),
             new RegistroEventosFalso(), new GeneradorSesion(new ServicioTokensFalso()),
-            new ValidadorActualizarDatosPersonales(), new ValidadorCambiarContrasena());
+            new ValidadorCambiarContrasena());
     }
 
     /// <summary>

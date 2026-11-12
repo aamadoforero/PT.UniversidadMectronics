@@ -22,9 +22,7 @@ public sealed class PruebaUnitariaRegistroUsuario
     /// <summary>Servicio bajo prueba.</summary>
     private readonly ServicioRegistroUsuarios _servicio;
 
-    /// <summary>
-    /// Arma el servicio con un administrador autenticado.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PruebaUnitariaRegistroUsuario"/>.</summary>
     public PruebaUnitariaRegistroUsuario()
     {
         Usuario administrador = new ConstructorUsuario().AsignarId(1).AsignarEmail("admin@universidad.edu").AsignarIdentificacion("9000")
@@ -82,20 +80,6 @@ public sealed class PruebaUnitariaRegistroUsuario
 
         Assert.Equal(TipoError.Conflicto, resultado.Error.Tipo);
         Assert.Contains("Email", resultado.Error.Detalles!.Keys);
-    }
-
-    /// <summary>
-    /// El rol de superadministración no se asigna desde la aplicación.
-    /// </summary>
-    /// <returns>Una tarea que termina con la verificación.</returns>
-    [Fact]
-    public async Task CrearConRolDeSuperAdministradorDevuelveRolNoAsignable()
-    {
-        CrearUsuarioDto datos = new("Otro Admin", "2000", "otro@universidad.edu", FabricaRoles.IdSuperAdministrador, null, null, null);
-
-        Resultado<UsuarioCreadoDto> resultado = await _servicio.CrearAsync(datos, CancellationToken.None);
-
-        Assert.Equal("Usuario.RolNoAsignable", resultado.Error.Codigo);
     }
 
     /// <summary>

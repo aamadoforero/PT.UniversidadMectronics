@@ -1,8 +1,7 @@
 namespace Aplicacion.Seguridad.Interfaces;
 
 /// <summary>
-/// Fuente de la hora actual. Existe para que ningún caso de uso lea el reloj del sistema directamente: así todas las
-/// fechas se generan en UTC y las pruebas pueden fijar la hora.
+/// Fuente de la hora actual en UTC. Permite fijar la hora en las pruebas.
 /// </summary>
 public interface IReloj
 {

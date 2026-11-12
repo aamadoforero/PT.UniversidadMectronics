@@ -5,8 +5,7 @@ using Universidad.Mectronics.Transversal.Resultados;
 namespace Aplicacion.Seguridad.Servicios.Usuarios;
 
 /// <summary>
-/// Casos de uso de lectura de la administración de cuentas. Exigen el permiso <c>usuarios.consultar</c> y nunca muestran la
-/// cuenta protegida del superadministrador.
+/// Casos de uso de lectura de la administración de cuentas. Exigen el permiso <c>usuarios.consultar</c>.
 /// </summary>
 public interface IServicioConsultaUsuarios
 {

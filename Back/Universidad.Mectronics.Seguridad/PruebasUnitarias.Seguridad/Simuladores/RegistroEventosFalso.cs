@@ -1,4 +1,4 @@
-using Aplicacion.Seguridad.Interfaces;
+using Universidad.Mectronics.Transversal.Auditoria;
 
 namespace PruebasUnitarias.Seguridad.Simuladores;
 

@@ -5,15 +5,11 @@ using FluentValidation;
 namespace Aplicacion.Seguridad.Validadores.CuentaPropia;
 
 /// <summary>
-/// Reglas de formato del cambio de contraseña. La política de la contraseña nueva la define el dominio
-/// (<see cref="PoliticaContrasena"/>); el validador reporta cada requisito incumplido como un mensaje del campo, para que
-/// el usuario vea todo lo que debe corregir de una vez. Verificar la contraseña actual le corresponde al servicio.
+/// Reglas de formato del cambio de contraseña. Reporta cada requisito incumplido de <see cref="PoliticaContrasena"/>.
 /// </summary>
 public sealed class ValidadorCambiarContrasena : AbstractValidator<CambiarContrasenaDto>
 {
-    /// <summary>
-    /// Define las reglas de cada campo.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="ValidadorCambiarContrasena"/>.</summary>
     public ValidadorCambiarContrasena()
     {
         RuleFor(datos => datos.ContrasenaActual)

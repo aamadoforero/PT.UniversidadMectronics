@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="../Universidad.Mectronics.Transversal/Universidad.Mectronics.Transversal.csproj" />
+  <Project Path="Api.Logs/Api.Logs.csproj" />
+  <Project Path="Aplicacion.Logs/Aplicacion.Logs.csproj" />
+  <Project Path="Dominio.Logs/Dominio.Logs.csproj" />
+  <Project Path="Infraestructura.Logs/Infraestructura.Logs.csproj" />
+</Solution>

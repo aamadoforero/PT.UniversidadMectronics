@@ -1,9 +1,8 @@
 namespace Infraestructura.Seguridad.Configuracion;
 
 /// <summary>
-/// Configuración de los tokens de sesión (sección <c>Jwt</c>). Los valores no secretos van en <c>appsettings.json</c>; las
-/// tres claves son secretas y se configuran con user-secrets en desarrollo o con variables de entorno en un servidor.
-/// Las valida <see cref="ValidadorOpcionesJwt"/> al arrancar la API.
+/// Configuración de los tokens de sesión (sección <c>Jwt</c>). Se valida con <see cref="ValidadorOpcionesJwt"/> al
+/// arrancar.
 /// </summary>
 public sealed class OpcionesJwt
 {
@@ -23,8 +22,7 @@ public sealed class OpcionesJwt
     public int DiasRenovacion { get; set; } = 7;
 
     /// <summary>
-    /// Secreto. Clave privada RSA de 2048 bits o más, en PKCS#8 y codificada en Base64 en una sola línea. Firma el token
-    /// de acceso con RS256; la clave pública se publica para que los demás microservicios lo verifiquen.
+    /// Secreto. Clave privada RSA (2048 bits o más) en PKCS#8 y Base64, con la que se firma el token de acceso.
     /// </summary>
     public string ClavePrivadaAcceso { get; set; } = string.Empty;
 

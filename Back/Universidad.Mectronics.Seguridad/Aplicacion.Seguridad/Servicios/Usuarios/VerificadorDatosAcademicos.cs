@@ -5,8 +5,7 @@ using Dominio.Seguridad.Entidades;
 namespace Aplicacion.Seguridad.Servicios.Usuarios;
 
 /// <summary>
-/// Verifica que los datos académicos enviados correspondan al tipo de perfil del rol: que estén los obligatorios, que no
-/// lleguen los que no aplican y que el programa y la categoría existan. Lo usan la creación y la edición de cuentas.
+/// Verifica que los datos académicos correspondan al tipo de perfil del rol y que el programa y la categoría existan.
 /// </summary>
 /// <param name="consultaCatalogos">Consulta de programas y categorías.</param>
 public sealed class VerificadorDatosAcademicos(IConsultaCatalogos consultaCatalogos)

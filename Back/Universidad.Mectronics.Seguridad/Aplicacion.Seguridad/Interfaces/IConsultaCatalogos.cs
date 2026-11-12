@@ -3,8 +3,7 @@ using Aplicacion.Seguridad.Dtos.Catalogos;
 namespace Aplicacion.Seguridad.Interfaces;
 
 /// <summary>
-/// Consultas de solo lectura sobre los catálogos académicos que Seguridad necesita para crear y editar perfiles:
-/// programas y categorías de profesor. Seguridad no modifica estos catálogos. Lo implementa Infraestructura.
+/// Consultas de solo lectura de los programas y las categorías de profesor.
 /// </summary>
 public interface IConsultaCatalogos
 {

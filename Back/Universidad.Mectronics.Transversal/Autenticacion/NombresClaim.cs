@@ -1,9 +1,6 @@
 namespace Universidad.Mectronics.Transversal.Autenticacion;
 
-/// <summary>
-/// Nombres de los claims del token de acceso. Seguridad los escribe al emitir el token y todos los microservicios los leen
-/// al validarlo, así que deben coincidir exactamente en ambos lados.
-/// </summary>
+/// <summary>Nombres de los claims del token de acceso.</summary>
 public static class NombresClaim
 {
     /// <summary>Identificador de la cuenta (claim estándar <c>sub</c>).</summary>

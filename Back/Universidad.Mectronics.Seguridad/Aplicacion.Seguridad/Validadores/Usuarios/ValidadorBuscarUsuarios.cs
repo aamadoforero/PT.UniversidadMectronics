@@ -4,17 +4,14 @@ using FluentValidation;
 namespace Aplicacion.Seguridad.Validadores.Usuarios;
 
 /// <summary>
-/// Reglas de los criterios de búsqueda de cuentas. Limita el tamaño de página para que una consulta no traiga demasiados
-/// registros de una vez.
+/// Reglas de los criterios de búsqueda de cuentas, con un tamaño de página máximo.
 /// </summary>
 public sealed class ValidadorBuscarUsuarios : AbstractValidator<BuscarUsuariosDto>
 {
     /// <summary>Tamaño máximo de página permitido.</summary>
     public const int TamanoPaginaMaximo = 100;
 
-    /// <summary>
-    /// Define las reglas de cada criterio.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="ValidadorBuscarUsuarios"/>.</summary>
     public ValidadorBuscarUsuarios()
     {
         RuleFor(datos => datos.NumeroPagina)

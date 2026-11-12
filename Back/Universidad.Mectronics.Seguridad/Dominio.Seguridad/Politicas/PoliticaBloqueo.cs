@@ -3,8 +3,7 @@ using Dominio.Seguridad.Excepciones;
 namespace Dominio.Seguridad.Politicas;
 
 /// <summary>
-/// Define cuántos inicios de sesión fallidos se toleran y por cuánto tiempo se bloquea la cuenta al alcanzarlos.
-/// Es un objeto de valor inmutable; lo aplica <see cref="Entidades.Usuario.RegistrarInicioFallido(DateTimeOffset, PoliticaBloqueo)"/>.
+/// Número de inicios de sesión fallidos permitidos y duración del bloqueo.
 /// </summary>
 public sealed record PoliticaBloqueo
 {
@@ -13,9 +12,7 @@ public sealed record PoliticaBloqueo
     /// </summary>
     public static PoliticaBloqueo Predeterminada { get; } = new(5, TimeSpan.FromMinutes(15));
 
-    /// <summary>
-    /// Crea una política de bloqueo.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PoliticaBloqueo"/>.</summary>
     /// <param name="intentosMaximos">Intentos fallidos consecutivos que provocan el bloqueo. Mínimo 1.</param>
     /// <param name="duracionBloqueo">Tiempo que dura el bloqueo. Debe ser mayor que cero.</param>
     public PoliticaBloqueo(int intentosMaximos, TimeSpan duracionBloqueo)

@@ -5,9 +5,7 @@ using Universidad.Mectronics.Transversal.Resultados;
 namespace Api.Seguridad.Controllers;
 
 /// <summary>
-/// Base de los controladores del servicio. Traduce los <see cref="Resultado"/> de la capa de Aplicación a respuestas HTTP con
-/// el mismo formato Problem Details que usan los middlewares, de modo que los controladores solo orquestan HTTP y no
-/// contienen lógica de negocio.
+/// Controlador base que convierte un <see cref="Resultado"/> en la respuesta HTTP.
 /// </summary>
 [ApiController]
 public abstract class SeguridadControllerBase : ControllerBase
@@ -25,8 +23,7 @@ public abstract class SeguridadControllerBase : ControllerBase
     }
 
     /// <summary>
-    /// Convierte un error en una respuesta Problem Details: título para el usuario, extensión <c>codigo</c> para el frontend y
-    /// extensión <c>errores</c> con el detalle por campo cuando lo hay. El código HTTP sale de <see cref="TipoError"/>.
+    /// Convierte un error en una respuesta Problem Details con el código del error y el detalle por campo.
     /// </summary>
     /// <param name="error">Error esperado.</param>
     /// <returns>La respuesta HTTP con el problema.</returns>

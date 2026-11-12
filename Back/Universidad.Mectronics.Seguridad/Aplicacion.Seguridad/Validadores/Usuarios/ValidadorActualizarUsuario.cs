@@ -3,15 +3,10 @@ using FluentValidation;
 
 namespace Aplicacion.Seguridad.Validadores.Usuarios;
 
-/// <summary>
-/// Reglas de formato para editar una cuenta. Qué datos académicos son obligatorios depende del tipo de perfil del rol actual
-/// de la cuenta; por eso esa parte la verifica el servicio.
-/// </summary>
+/// <summary>Reglas de formato para editar una cuenta.</summary>
 public sealed class ValidadorActualizarUsuario : AbstractValidator<ActualizarUsuarioDto>
 {
-    /// <summary>
-    /// Define las reglas de cada campo.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="ValidadorActualizarUsuario"/>.</summary>
     public ValidadorActualizarUsuario()
     {
         RuleFor(datos => datos.NombreCompleto).ValidarNombreCompleto();

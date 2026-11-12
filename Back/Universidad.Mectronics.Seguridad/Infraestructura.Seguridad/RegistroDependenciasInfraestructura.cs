@@ -1,5 +1,4 @@
 using Aplicacion.Seguridad.Interfaces;
-using Infraestructura.Seguridad.Auditoria;
 using Infraestructura.Seguridad.Configuracion;
 using Infraestructura.Seguridad.Criptografia;
 using Infraestructura.Seguridad.Persistencia;
@@ -9,12 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Universidad.Mectronics.Transversal.Configuracion;
+using Universidad.Mectronics.Transversal.Comunicacion;
 
 namespace Infraestructura.Seguridad;
 
 /// <summary>
-/// Registro en el contenedor de inyección de dependencias de las implementaciones de Infraestructura: persistencia,
-/// criptografía, auditoría y reloj. La API lo invoca al arrancar, junto con el registro de la capa de Aplicación.
+/// Registro de las dependencias de Infraestructura: persistencia, criptografía, reloj y comunicación con otros microservicios.
 /// </summary>
 public static class RegistroDependenciasInfraestructura
 {
@@ -22,8 +22,7 @@ public static class RegistroDependenciasInfraestructura
     public const string NombreCadenaConexion = "UniversidadMectronics";
 
     /// <summary>
-    /// Registra las implementaciones de las interfaces de Aplicación y valida la configuración. Falla al arrancar si falta
-    /// la cadena de conexión o algún secreto de JWT, con un mensaje que indica cómo configurarlo.
+    /// Registra las implementaciones de las interfaces de Aplicación y valida la configuración al arrancar.
     /// </summary>
     /// <param name="servicios">Colección de servicios de la aplicación.</param>
     /// <param name="configuracion">Configuración (appsettings, user-secrets, variables de entorno).</param>
@@ -41,10 +40,10 @@ public static class RegistroDependenciasInfraestructura
 
         servicios.AddDbContext<ContextoSeguridad>(opciones =>
             opciones.UseSqlServer(cadenaConexion, sql => sql.EnableRetryOnFailure()));
-        servicios.AddSingleton(new OpcionesBaseDatos(cadenaConexion));
         servicios.AddScoped<IUnidadTrabajo, UnidadTrabajo>();
         servicios.AddScoped<IRepositorioUsuarios, RepositorioUsuarios>();
         servicios.AddScoped<IRepositorioRoles, RepositorioRoles>();
+        servicios.AddScoped<IRepositorioInscripciones, RepositorioInscripciones>();
         servicios.AddScoped<IConsultaCatalogos, ConsultaCatalogos>();
 
         servicios.AddSingleton<IValidateOptions<OpcionesJwt>, ValidadorOpcionesJwt>();
@@ -57,7 +56,7 @@ public static class RegistroDependenciasInfraestructura
         servicios.AddSingleton<IServicioHashContrasena, ServicioHashContrasena>();
         servicios.AddSingleton<IGeneradorContrasenaTemporal, GeneradorContrasenaTemporal>();
         servicios.AddSingleton<IReloj, RelojSistema>();
-        servicios.AddSingleton<IRegistroEventos, RegistroEventos>();
+        servicios.InyectarClienteMicroservicios(configuracion);
 
         return servicios;
     }

@@ -3,8 +3,7 @@ using FluentValidation.Results;
 namespace Aplicacion.Seguridad.Validadores;
 
 /// <summary>
-/// Conversión del resultado de FluentValidation al formato de detalle por campo que usa <c>Error.Validacion</c>, para que
-/// el resto de la aplicación no dependa de los tipos de FluentValidation.
+/// Convierte el resultado de FluentValidation en el detalle por campo que usa <c>Error.Validacion</c>.
 /// </summary>
 public static class ExtensionesResultadoValidacion
 {

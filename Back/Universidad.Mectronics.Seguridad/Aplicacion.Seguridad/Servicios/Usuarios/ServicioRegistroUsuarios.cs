@@ -8,14 +8,12 @@ using Dominio.Seguridad.Entidades;
 using Dominio.Seguridad.ObjetosValor;
 using FluentValidation;
 using FluentValidation.Results;
+using Universidad.Mectronics.Transversal.Auditoria;
 using Universidad.Mectronics.Transversal.Resultados;
 
 namespace Aplicacion.Seguridad.Servicios.Usuarios;
 
-/// <summary>
-/// Implementación de los casos de uso que crean y editan cuentas. Verifica, en este orden: permiso, formato, alcance,
-/// datos académicos según el rol y unicidad del correo y la identificación; luego delega la creación al dominio.
-/// </summary>
+/// <summary>Implementación de la creación y edición de cuentas.</summary>
 /// <param name="autorizador">Reglas de alcance sobre las cuentas y los roles.</param>
 /// <param name="repositorioUsuarios">Acceso a las cuentas.</param>
 /// <param name="repositorioRoles">Acceso a los roles.</param>
@@ -66,11 +64,6 @@ public sealed class ServicioRegistroUsuarios(
             return ErroresUsuario.CrearRolNoEncontrado();
         }
 
-        if (!autorizador.PuedeAsignar(rol))
-        {
-            return ErroresUsuario.CrearRolNoAsignable();
-        }
-
         IReadOnlyDictionary<string, string[]> erroresAcademicos = await verificadorDatosAcademicos.VerificarAsync(
             rol.TipoPerfil, datos.ProgramaId, datos.UbicacionSemestral, datos.CategoriaId, cancelacion);
         if (erroresAcademicos.Count > 0)
@@ -104,7 +97,8 @@ public sealed class ServicioRegistroUsuarios(
         await registroEventos.RegistrarInformacionAsync(
             $"La cuenta {autorizador.IdActor} creó la cuenta {usuario.Id} con el rol {rol.Nombre}.", cancelacion);
 
-        return new UsuarioCreadoDto(usuario.ConvertirAUsuarioDetalleDto(ahora), contrasenaTemporal);
+        Usuario creado = await repositorioUsuarios.ObtenerPorIdAsync(usuario.Id, cancelacion) ?? usuario;
+        return new UsuarioCreadoDto(creado.ConvertirAUsuarioDetalleDto(ahora), contrasenaTemporal);
     }
 
     /// <summary>
@@ -132,7 +126,7 @@ public sealed class ServicioRegistroUsuarios(
         }
 
         Usuario? usuario = await repositorioUsuarios.ObtenerPorIdAsync(id, cancelacion);
-        if (usuario is null || !autorizador.PuedeGestionar(usuario))
+        if (usuario is null)
         {
             return ErroresUsuario.CrearNoEncontrado(id);
         }
@@ -167,7 +161,8 @@ public sealed class ServicioRegistroUsuarios(
         await registroEventos.RegistrarInformacionAsync(
             $"La cuenta {autorizador.IdActor} editó los datos de la cuenta {usuario.Id}.", cancelacion);
 
-        return usuario.ConvertirAUsuarioDetalleDto(ahora);
+        Usuario editado = await repositorioUsuarios.ObtenerPorIdAsync(usuario.Id, cancelacion) ?? usuario;
+        return editado.ConvertirAUsuarioDetalleDto(ahora);
     }
 
     /// <summary>

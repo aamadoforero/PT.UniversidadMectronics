@@ -4,9 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>2718dd79-12d1-4fc8-a6f6-bc9d6bbbaa70</UserSecretsId>
-    <!-- Genera el XML de documentación (lo usa OpenAPI); el compilador advierte (CS1591) sobre miembros públicos sin documentar. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Aplica al compilar las convenciones de Back/.editorconfig (por ejemplo, prohibir var). -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
   <ItemGroup>

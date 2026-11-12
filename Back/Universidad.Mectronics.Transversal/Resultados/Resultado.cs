@@ -1,15 +1,11 @@
 namespace Universidad.Mectronics.Transversal.Resultados;
 
 /// <summary>
-/// Resultado de un caso de uso que no devuelve datos: indica si fue exitoso o, si falló, con qué <see cref="Error"/>.
-/// Implementa el patrón Result: los errores esperados se devuelven como valores en lugar de lanzar excepciones.
-/// Gracias a la conversión implícita, un método puede escribir <c>return ErroresUsuario.NoEncontrado(id);</c>.
+/// Resultado de un caso de uso sin datos: éxito o el <see cref="Error"/> que lo impidió.
 /// </summary>
 public class Resultado
 {
-    /// <summary>
-    /// Crea el resultado y verifica que sea coherente: un éxito no lleva error y un fallo siempre lo lleva.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Resultado"/>.</summary>
     /// <param name="esExitoso">Indica si la operación fue exitosa.</param>
     /// <param name="error">Error del fallo, o <see cref="Error.Ninguno"/> si fue exitosa.</param>
     protected Resultado(bool esExitoso, Error error)

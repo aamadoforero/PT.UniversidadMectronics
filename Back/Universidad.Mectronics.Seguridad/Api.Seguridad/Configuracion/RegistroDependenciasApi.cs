@@ -3,6 +3,8 @@ using System.Threading.RateLimiting;
 using Api.Seguridad.Autenticacion;
 using Api.Seguridad.Errores;
 using Api.Seguridad.Sesion;
+using Dominio.Seguridad.Politicas;
+using Microsoft.Extensions.Options;
 using Universidad.Mectronics.Transversal.Autenticacion;
 
 namespace Api.Seguridad.Configuracion;
@@ -44,6 +46,17 @@ public static class RegistroDependenciasApi
             .ValidateOnStart();
         servicios.AddSingleton<GestorCookiesSesion>();
 
+        servicios.AddOptions<OpcionesBloqueo>()
+            .Bind(configuracion.GetSection(OpcionesBloqueo.Seccion))
+            .Validate(opciones => opciones.IntentosMaximos >= 1, "La configuración 'Bloqueo:IntentosMaximos' debe ser al menos 1.")
+            .Validate(opciones => opciones.MinutosBloqueo >= 1, "La configuración 'Bloqueo:MinutosBloqueo' debe ser al menos 1.")
+            .ValidateOnStart();
+        servicios.AddSingleton(proveedor =>
+        {
+            OpcionesBloqueo opciones = proveedor.GetRequiredService<IOptions<OpcionesBloqueo>>().Value;
+            return new PoliticaBloqueo(opciones.IntentosMaximos, TimeSpan.FromMinutes(opciones.MinutosBloqueo));
+        });
+
         string[] origenes = configuracion.GetSection("Cors:OrigenesPermitidos").Get<string[]>() ?? [];
         servicios.AddCors(opciones => opciones.AddPolicy(PoliticaCors, politica => politica
             .WithOrigins(origenes)
@@ -60,9 +73,9 @@ public static class RegistroDependenciasApi
             {
                 contexto.HttpContext.Response.Headers.RetryAfter = "60";
                 await TypedResults.Problem(
-                    title: "Demasiados intentos de inicio de sesión. Espere un minuto e intente de nuevo.",
+                    title: "Se hicieron demasiados intentos de inicio de sesión desde este equipo. Espere un minuto e intente de nuevo.",
                     statusCode: StatusCodes.Status429TooManyRequests,
-                    extensions: new Dictionary<string, object?> { ["codigo"] = "Autenticacion.DemasiadosIntentos" })
+                    extensions: new Dictionary<string, object?> { ["codigo"] = "Autenticacion.DemasiadosIntentosEquipo" })
                     .ExecuteAsync(contexto.HttpContext);
             };
         });

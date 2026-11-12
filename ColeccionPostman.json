@@ -1,70 +1,17 @@
 {
   "info": {
-    "name": "Universidad Mectronics - Seguridad",
-    "description": "Colección del microservicio de Seguridad.\n\n**Cómo funciona la sesión:** los tokens viajan en cookies `HttpOnly` que Postman guarda y reenvía solo. Las peticiones que modifican datos (`POST`, `PUT`, `DELETE`) deben llevar la cabecera `X-CSRF-TOKEN` con el valor de la cookie `universidad-csrf`: el script de la colección lo captura en la variable `csrf` y lo agrega automáticamente.\n\n**Orden recomendado (Collection Runner):** las carpetas están numeradas. Primero se inicia sesión con la contraseña temporal del SuperAdministrador y se cambia por `contrasenaNueva`; sin ese cambio, el resto responde 403.\n\n**Variables de la colección:** `baseUrl`, `email`, `contrasenaActual` y `contrasenaNueva` se configuran a mano; `csrf`, `rolEstudianteId`, `programaId`, `categoriaId`, `usuarioId` y `contrasenaTemporalUsuario` las llenan los scripts.\n\nRequisitos: la API en ejecución (`dotnet run --project Back/Universidad.Mectronics.Seguridad/Api.Seguridad`) y los secretos configurados según el `README.md`.",
+    "name": "Universidad Mectronics",
+    "description": "Endpoints de los microservicios. Seguridad y Académico se consumen a través del gateway (`baseUrl`).\n\nLa sesión viaja en cookies que Postman reenvía solo. Las peticiones que modifican datos llevan la cabecera `X-CSRF-TOKEN`, que el script de la colección toma de la cookie `universidad-csrf`.\n\nPara probar otro rol, cambie `email` y `contrasena` y vuelva a iniciar sesión. Las cuentas sembradas usan la contraseña temporal `Mectronics#2026`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:5090",
-      "description": "Dirección de la API de Seguridad."
-    },
-    {
-      "key": "email",
-      "value": "superadmin@universidadmectronics.edu",
-      "description": "Cuenta con la que se inicia sesión."
-    },
-    {
-      "key": "contrasenaActual",
-      "value": "Mectronics#2026",
-      "description": "Contraseña vigente de la cuenta. Tras el cambio, el script la reemplaza por contrasenaNueva."
-    },
-    {
-      "key": "contrasenaNueva",
-      "value": "Postman#2026",
-      "description": "Contraseña nueva para el cambio obligatorio: mayúscula, minúscula, número, símbolo, 8 a 128 caracteres."
-    },
-    {
-      "key": "csrf",
-      "value": "",
-      "description": "Token contra CSRF; lo llena el script al iniciar o renovar sesión."
-    },
-    {
-      "key": "rolEstudianteId",
-      "value": "",
-      "description": "Lo llena 'Roles asignables'."
-    },
-    {
-      "key": "programaId",
-      "value": "",
-      "description": "Lo llena 'Programas activos'."
-    },
-    {
-      "key": "categoriaId",
-      "value": "",
-      "description": "Lo llena 'Categorías de profesor'."
-    },
-    {
-      "key": "usuarioId",
-      "value": "",
-      "description": "Lo llena 'Crear cuenta de estudiante'."
-    },
-    {
-      "key": "contrasenaTemporalUsuario",
-      "value": "",
-      "description": "Contraseña temporal de la cuenta creada o restablecida; solo se entrega una vez."
-    }
-  ],
   "event": [
     {
       "listen": "prerequest",
       "script": {
         "type": "text/javascript",
         "exec": [
-          "// Agrega la cabecera X-CSRF-TOKEN en las peticiones que modifican datos (POST, PUT, DELETE).",
           "const csrf = pm.collectionVariables.get('csrf');",
-          "if (csrf && !['GET', 'HEAD', 'OPTIONS'].includes(pm.request.method)) {",
+          "if (csrf && pm.request.method !== 'GET') {",
           "    pm.request.headers.upsert({ key: 'X-CSRF-TOKEN', value: csrf });",
           "}"
         ]
@@ -75,12 +22,9 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "// Cada vez que la API escribe una cookie CSRF nueva (inicio, renovación o cambio de contraseña), se guarda su valor.",
           "const csrf = pm.cookies.get('universidad-csrf');",
-          "if (csrf) { pm.collectionVariables.set('csrf', csrf); }",
-          "// Los errores siguen el formato Problem Details: se muestran en la consola para facilitar la revisión.",
-          "if (pm.response.code >= 400 && pm.response.headers.get('Content-Type')?.includes('problem+json')) {",
-          "    console.log(pm.info.requestName, pm.response.code, pm.response.json());",
+          "if (csrf) {",
+          "    pm.collectionVariables.set('csrf', csrf);",
           "}"
         ]
       }
@@ -88,693 +32,404 @@
   ],
   "item": [
     {
-      "name": "1. Sesión",
-      "description": "Iniciar y renovar la sesión. El cierre está en la última carpeta.",
+      "name": "Seguridad",
       "item": [
         {
-          "name": "Iniciar sesión",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/sesion",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "sesion"
-              ]
-            },
-            "description": "Inicia sesión con `email` y `contrasenaActual`. Escribe las cookies de acceso, renovación y CSRF. Cualquier fallo de credenciales responde el mismo 401; más de 10 intentos por minuto responden 429.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{email}}\",\n  \"contrasena\": \"{{contrasenaActual}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
+          "name": "Sesión",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
-                  "pm.test('No entrega tokens en el cuerpo', () => pm.expect(pm.response.text()).to.not.include('tokenAcceso'));",
-                  "pm.test('Escribe la cookie CSRF', () => pm.expect(pm.cookies.has('universidad-csrf')).to.be.true);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Renovar sesión",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/sesion/renovacion",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "sesion",
-                "renovacion"
-              ]
-            },
-            "description": "Emite tokens nuevos con la cookie de renovación (rotación). Si la sesión ya no es válida, responde 401 y elimina las cookies."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "2. Cuenta propia",
-      "description": "Operaciones sobre la cuenta de la sesión.",
-      "item": [
-        {
-          "name": "Ver perfil",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/cuenta/perfil",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "cuenta",
-                "perfil"
-              ]
-            },
-            "description": "Perfil completo de la cuenta. Se permite aunque la contraseña sea temporal."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Cambiar contraseña",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/cuenta/contrasena",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "cuenta",
-                "contrasena"
-              ]
-            },
-            "description": "Cambia `contrasenaActual` por `contrasenaNueva`. Es obligatorio cuando la contraseña es temporal. Entrega una sesión nueva e invalida las anteriores.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"contrasenaActual\": \"{{contrasenaActual}}\",\n  \"contrasenaNueva\": \"{{contrasenaNueva}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
-                  "if (pm.response.code === 200) {",
-                  "    // Desde ahora la contraseña vigente es la nueva.",
-                  "    pm.collectionVariables.set('contrasenaActual', pm.collectionVariables.get('contrasenaNueva'));",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Actualizar nombre",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/cuenta/perfil",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "cuenta",
-                "perfil"
-              ]
-            },
-            "description": "Actualiza el nombre de la cuenta, que es el único dato que el usuario puede editar de sí mismo.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombreCompleto\": \"Super Administrador\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "3. Catálogos",
-      "description": "Listas para los formularios de cuentas. Exigen los permisos de crear o editar cuentas.",
-      "item": [
-        {
-          "name": "Roles asignables",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/catalogos/roles",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "catalogos",
-                "roles"
-              ]
-            },
-            "description": "Roles que se pueden asignar (sin el de superadministración), con su tipo de perfil."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
-                  "const estudiante = pm.response.json().find(rol => rol.tipoPerfil === 'Estudiante');",
-                  "if (estudiante) { pm.collectionVariables.set('rolEstudianteId', estudiante.id); }"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Programas activos",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/catalogos/programas",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "catalogos",
-                "programas"
-              ]
-            },
-            "description": "Programas académicos activos."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
-                  "const programas = pm.response.json();",
-                  "if (programas.length > 0) { pm.collectionVariables.set('programaId', programas[0].id); }"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Categorías de profesor",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/catalogos/categorias-profesor",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "catalogos",
-                "categorias-profesor"
-              ]
-            },
-            "description": "Categorías de vinculación docente."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
-                  "const categorias = pm.response.json();",
-                  "if (categorias.length > 0) { pm.collectionVariables.set('categoriaId', categorias[0].id); }"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "4. Usuarios",
-      "description": "Administración de cuentas. Cada operación exige su permiso; la cuenta del superadministrador está protegida.",
-      "item": [
-        {
-          "name": "Buscar cuentas",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/usuarios?numeroPagina=1&tamanoPagina=20",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "usuarios"
-              ],
-              "query": [
-                {
-                  "key": "texto",
-                  "value": "gomez",
-                  "disabled": true,
-                  "description": "Busca en nombre, identificación y correo."
+              "name": "Iniciar sesión",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/sesion",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "sesion"
+                  ]
                 },
-                {
-                  "key": "rolId",
-                  "value": "",
-                  "disabled": true,
-                  "description": "Filtra por rol."
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{email}}\",\n  \"contrasena\": \"{{contrasena}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Renovar sesión",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/sesion/renovacion",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "sesion",
+                    "renovacion"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Cerrar sesión",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/sesion",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "sesion"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cuenta",
+          "item": [
+            {
+              "name": "Perfil",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/cuenta/perfil",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "cuenta",
+                    "perfil"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Cambiar contraseña",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/cuenta/contrasena",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "cuenta",
+                    "contrasena"
+                  ]
                 },
-                {
-                  "key": "activo",
-                  "value": "true",
-                  "disabled": true,
-                  "description": "Filtra por estado."
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"contrasenaActual\": \"{{contrasena}}\",\n  \"contrasenaNueva\": \"{{contrasenaNueva}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                {
-                  "key": "numeroPagina",
-                  "value": "1",
-                  "description": "Página, desde 1."
+                "description": "Las cuentas sembradas tienen contraseña temporal: hay que cambiarla antes de usar los demás endpoints. Después del cambio, actualice la variable `contrasena`."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Catálogos",
+          "item": [
+            {
+              "name": "Roles",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/catalogos/roles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "catalogos",
+                    "roles"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Programas",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/catalogos/programas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "catalogos",
+                    "programas"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Categorías de profesor",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/catalogos/categorias-profesor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "catalogos",
+                    "categorias-profesor"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Usuarios",
+          "item": [
+            {
+              "name": "Buscar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/usuarios?numeroPagina=1&tamanoPagina=20",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "usuarios"
+                  ],
+                  "query": [
+                    {
+                      "key": "texto",
+                      "value": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "rolId",
+                      "value": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "activo",
+                      "value": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "numeroPagina",
+                      "value": "1"
+                    },
+                    {
+                      "key": "tamanoPagina",
+                      "value": "20"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Obtener",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "usuarios",
+                    "{{usuarioId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Crear",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/usuarios",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "usuarios"
+                  ]
                 },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombreCompleto\": \"Juliana Restrepo Mora\",\n  \"identificacion\": \"3000000001\",\n  \"email\": \"juliana.restrepo@universidadmectronics.edu\",\n  \"rolId\": 3,\n  \"programaId\": 1,\n  \"ubicacionSemestral\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Para un profesor se envía `categoriaId` en lugar de `programaId` y `ubicacionSemestral`; el administrador no lleva datos académicos."
+              },
+              "event": [
                 {
-                  "key": "tamanoPagina",
-                  "value": "20",
-                  "description": "Cuentas por página, de 1 a 100."
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    pm.collectionVariables.set('usuarioId', pm.response.json().usuario.id);",
+                      "}"
+                    ]
+                  }
                 }
               ]
             },
-            "description": "Búsqueda paginada y ordenada por nombre. Los filtros son opcionales: actívelos en la pestaña Params."
-          },
-          "event": [
             {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));"
-                ]
+              "name": "Editar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "usuarios",
+                    "{{usuarioId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombreCompleto\": \"Juliana Restrepo Mora\",\n  \"identificacion\": \"3000000001\",\n  \"email\": \"juliana.restrepo@universidadmectronics.edu\",\n  \"programaId\": 1,\n  \"ubicacionSemestral\": 2\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
               }
-            }
-          ]
-        },
-        {
-          "name": "Crear cuenta de estudiante",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/usuarios",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "usuarios"
-              ]
             },
-            "description": "Crea una cuenta con perfil de estudiante. El correo y la identificación usan una marca de tiempo para no repetirse. La contraseña temporal solo se entrega en esta respuesta.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombreCompleto\": \"Estudiante Postman\",\n  \"identificacion\": \"PM-{{$timestamp}}\",\n  \"email\": \"postman.{{$timestamp}}@prueba.local\",\n  \"rolId\": {{rolEstudianteId}},\n  \"programaId\": {{programaId}},\n  \"ubicacionSemestral\": 3\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Cambiar estado",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}/estado",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "usuarios",
+                    "{{usuarioId}}",
+                    "estado"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"activo\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Restablecer contraseña",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}/contrasena-temporal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "seguridad",
+                    "usuarios",
+                    "{{usuarioId}}",
+                    "contrasena-temporal"
+                  ]
                 }
               }
             }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 201', () => pm.expect(pm.response.code).to.be.oneOf([201]));",
-                  "if (pm.response.code === 201) {",
-                  "    const creado = pm.response.json();",
-                  "    pm.collectionVariables.set('usuarioId', creado.usuario.id);",
-                  "    pm.collectionVariables.set('contrasenaTemporalUsuario', creado.contrasenaTemporal);",
-                  "}"
-                ]
-              }
-            }
           ]
         },
         {
-          "name": "Ver cuenta",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "usuarios",
-                "{{usuarioId}}"
-              ]
-            },
-            "description": "Detalle de una cuenta."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Editar cuenta",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "usuarios",
-                "{{usuarioId}}"
-              ]
-            },
-            "description": "Edita los datos y el perfil académico. Los datos académicos exigidos dependen del tipo de perfil del rol.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombreCompleto\": \"Estudiante Postman Editado\",\n  \"identificacion\": \"PM-{{$timestamp}}\",\n  \"email\": \"postman.editado.{{$timestamp}}@prueba.local\",\n  \"programaId\": {{programaId}},\n  \"ubicacionSemestral\": 4\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Cambiar rol",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}/rol",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "usuarios",
-                "{{usuarioId}}",
-                "rol"
-              ]
-            },
-            "description": "Cambia el rol hacia otro con el mismo tipo de perfil (por ejemplo, de Estudiante a Monitor). Asignar el mismo rol no cambia nada.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"rolId\": {{rolEstudianteId}}\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Desactivar cuenta",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}/estado",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "usuarios",
-                "{{usuarioId}}",
-                "estado"
-              ]
-            },
-            "description": "Desactiva la cuenta: pierde el acceso en la petición siguiente.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"activo\": false\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
-                  "pm.test('Queda inactiva', () => pm.expect(pm.response.json().activo).to.be.false);"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Activar cuenta",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}/estado",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "usuarios",
-                "{{usuarioId}}",
-                "estado"
-              ]
-            },
-            "description": "Vuelve a habilitar la cuenta.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"activo\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Restablecer contraseña",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/seguridad/usuarios/{{usuarioId}}/contrasena-temporal",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "seguridad",
-                "usuarios",
-                "{{usuarioId}}",
-                "contrasena-temporal"
-              ]
-            },
-            "description": "Genera una contraseña temporal nueva, desbloquea la cuenta e invalida sus sesiones."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
-                  "if (pm.response.code === 200) { pm.collectionVariables.set('contrasenaTemporalUsuario', pm.response.json().contrasenaTemporal); }"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "5. Claves",
-      "description": "Clave pública para que otros microservicios validen los tokens.",
-      "item": [
-        {
-          "name": "Clave pública (JWKS)",
+          "name": "Claves públicas (JWKS)",
           "request": {
             "method": "GET",
             "header": [],
@@ -787,60 +442,425 @@
                 ".well-known",
                 "jwks.json"
               ]
-            },
-            "description": "Clave pública RSA en formato JWKS. Es anónima y nunca incluye la parte privada."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
-                  "pm.test('Sin parte privada', () => pm.expect(pm.response.json().keys[0]).to.not.have.property('d'));"
-                ]
-              }
             }
-          ]
+          }
         }
       ]
     },
     {
-      "name": "6. Cerrar sesión",
-      "description": "Cierra la sesión eliminando las cookies.",
+      "name": "Académico",
       "item": [
         {
-          "name": "Cerrar sesión",
+          "name": "Materias",
+          "item": [
+            {
+              "name": "Listar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/materias?incluirInactivas=false",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "materias"
+                  ],
+                  "query": [
+                    {
+                      "key": "incluirInactivas",
+                      "value": "false"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Obtener",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/materias/{{materiaId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "materias",
+                    "{{materiaId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Crear",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/materias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "materias"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Arquitectura de Software\",\n  \"programaId\": 1,\n  \"profesorId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    pm.collectionVariables.set('materiaId', pm.response.json().id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Editar",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/materias/{{materiaId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "materias",
+                    "{{materiaId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Arquitectura de Software\",\n  \"profesorId\": 2\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Cambiar estado",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/materias/{{materiaId}}/estado",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "materias",
+                    "{{materiaId}}",
+                    "estado"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"activo\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Materias dictadas",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/materias/dictadas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "materias",
+                    "dictadas"
+                  ]
+                },
+                "description": "Requiere iniciar sesión con una cuenta de profesor."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Profesores",
           "request": {
-            "method": "DELETE",
+            "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/seguridad/sesion",
+              "raw": "{{baseUrl}}/api/academico/profesores",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "seguridad",
-                "sesion"
+                "academico",
+                "profesores"
               ]
-            },
-            "description": "Elimina las cookies de sesión. Responde 204."
-          },
-          "event": [
+            }
+          }
+        },
+        {
+          "name": "Inscripciones",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Responde 204', () => pm.expect(pm.response.code).to.be.oneOf([204]));",
-                  "pm.collectionVariables.set('csrf', '');"
-                ]
+              "name": "Mis inscripciones",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/inscripciones/propias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "inscripciones",
+                    "propias"
+                  ]
+                },
+                "description": "Los endpoints de inscripciones propias requieren una cuenta de estudiante."
+              }
+            },
+            {
+              "name": "Inscribir",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/inscripciones/propias",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "inscripciones",
+                    "propias"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"materiaId\": {{materiaId}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Cancelar",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/inscripciones/propias/{{materiaId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "inscripciones",
+                    "propias",
+                    "{{materiaId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Compañeros de clase",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/academico/inscripciones/propias/{{materiaId}}/companeros",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "academico",
+                    "inscripciones",
+                    "propias",
+                    "{{materiaId}}",
+                    "companeros"
+                  ]
+                }
               }
             }
           ]
+        },
+        {
+          "name": "Estudiantes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/academico/estudiantes?numeroPagina=1&tamanoPagina=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "academico",
+                "estudiantes"
+              ],
+              "query": [
+                {
+                  "key": "texto",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "numeroPagina",
+                  "value": "1"
+                },
+                {
+                  "key": "tamanoPagina",
+                  "value": "20"
+                }
+              ]
+            }
+          }
         }
       ]
+    },
+    {
+      "name": "Logs",
+      "item": [
+        {
+          "name": "Registrar evento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{claveLogs}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlLogs}}/api/logs/eventos",
+              "host": [
+                "{{baseUrlLogs}}"
+              ],
+              "path": [
+                "api",
+                "logs",
+                "eventos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"Informativo\",\n  \"mensaje\": \"Evento de prueba.\",\n  \"excepcion\": null,\n  \"fecha\": \"{{$isoTimestamp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Logs no se expone en el gateway: se llama directo con la clave de una aplicación (`ClavesAplicacion`)."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5080"
+    },
+    {
+      "key": "baseUrlLogs",
+      "value": "http://localhost:5092"
+    },
+    {
+      "key": "email",
+      "value": "admin@universidadmectronics.edu"
+    },
+    {
+      "key": "contrasena",
+      "value": "Mectronics#2026"
+    },
+    {
+      "key": "contrasenaNueva",
+      "value": "Universidad#2026"
+    },
+    {
+      "key": "usuarioId",
+      "value": "2"
+    },
+    {
+      "key": "materiaId",
+      "value": "1"
+    },
+    {
+      "key": "claveLogs",
+      "value": ""
+    },
+    {
+      "key": "csrf",
+      "value": ""
     }
   ]
 }

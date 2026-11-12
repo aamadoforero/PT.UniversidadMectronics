@@ -26,14 +26,13 @@ public sealed class ServicioCatalogos(
     /// <returns>Los roles asignables, o un error de falta de permiso.</returns>
     public async Task<Resultado<IReadOnlyList<RolDto>>> ObtenerRolesAsignablesAsync(CancellationToken cancelacion)
     {
-        if (!TieneAlgunPermiso(CodigosPermisoUsuarios.Crear, CodigosPermisoUsuarios.CambiarRol))
+        if (!TieneAlgunPermiso(CodigosPermisoUsuarios.Crear))
         {
             return ErroresCatalogos.CrearSinPermiso();
         }
 
         IReadOnlyList<Rol> roles = await repositorioRoles.ObtenerTodosAsync(cancelacion);
         IReadOnlyList<RolDto> asignables = roles
-            .Where(rol => !rol.EsSuperAdministrador)
             .Select(rol => rol.ConvertirARolDto())
             .ToList();
 

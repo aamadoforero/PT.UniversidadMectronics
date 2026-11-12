@@ -1,11 +1,12 @@
 using Api.Seguridad.ContrasenaTemporal;
 using Api.Seguridad.Csrf;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Api.Seguridad.Configuracion;
 
 /// <summary>
-/// Orden del pipeline HTTP. El orden importa: primero el manejo de errores (para atrapar todo lo que sigue), Swagger UI en
-/// desarrollo, luego CORS y CSRF, después autenticación y autorización, y al final la regla de contraseña temporal y los controladores.
+/// Configura el pipeline HTTP del servicio. Las cabeceras <c>X-Forwarded-*</c> del gateway se procesan primero para que
+/// el límite de intentos use la IP del cliente.
 /// </summary>
 public static class ConfiguracionPipeline
 {
@@ -16,6 +17,10 @@ public static class ConfiguracionPipeline
     /// <returns>La misma aplicación, para encadenar configuraciones.</returns>
     public static WebApplication UsarApiSeguridad(this WebApplication aplicacion)
     {
+        aplicacion.UseForwardedHeaders(new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+        });
         aplicacion.UseExceptionHandler();
 
         if (aplicacion.Environment.IsDevelopment())

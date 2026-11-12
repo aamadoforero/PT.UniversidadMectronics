@@ -1,5 +1,6 @@
-using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using Universidad.Mectronics.Transversal.Configuracion;
 
 namespace Infraestructura.Seguridad.Configuracion;
 

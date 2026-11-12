@@ -19,8 +19,7 @@ public static class ErroresCuentaPropia
         detalles);
 
     /// <summary>
-    /// Crea el error para una contraseña actual que no coincide. Es un error de validación del campo, para que el
-    /// frontend lo muestre junto a él.
+    /// Crea el error para una contraseña actual que no coincide, asociado al campo.
     /// </summary>
     /// <returns>El error de validación.</returns>
     public static Error CrearContrasenaActualIncorrecta() => Error.CrearValidacion(

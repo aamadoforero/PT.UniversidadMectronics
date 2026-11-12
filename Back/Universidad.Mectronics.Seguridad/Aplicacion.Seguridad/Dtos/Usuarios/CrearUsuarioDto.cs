@@ -1,8 +1,7 @@
 namespace Aplicacion.Seguridad.Dtos.Usuarios;
 
 /// <summary>
-/// Datos para crear una cuenta. Los datos académicos que se exigen dependen del tipo de perfil del rol elegido:
-/// programa y semestre para estudiante, categoría para profesor y ninguno para los demás roles.
+/// Datos para crear una cuenta. Los datos académicos dependen del tipo de perfil del rol.
 /// </summary>
 /// <param name="NombreCompleto">Nombre completo.</param>
 /// <param name="Identificacion">Documento de identidad.</param>

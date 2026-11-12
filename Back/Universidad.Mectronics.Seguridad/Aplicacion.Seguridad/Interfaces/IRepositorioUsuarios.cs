@@ -6,8 +6,7 @@ using Universidad.Mectronics.Transversal.Paginacion;
 namespace Aplicacion.Seguridad.Interfaces;
 
 /// <summary>
-/// Acceso a las cuentas de usuario (patrón Repository). Los métodos de lectura devuelven el agregado completo:
-/// la cuenta con su rol, los permisos del rol y su perfil académico. Lo implementa Infraestructura con Entity Framework.
+/// Acceso a las cuentas de usuario. Las lecturas devuelven la cuenta con su rol, sus permisos y su perfil académico.
 /// </summary>
 public interface IRepositorioUsuarios
 {
@@ -46,8 +45,7 @@ public interface IRepositorioUsuarios
     Task<bool> ExisteIdentificacionAsync(Identificacion identificacion, int? excluirUsuarioId, CancellationToken cancelacion);
 
     /// <summary>
-    /// Busca cuentas según los criterios del filtro, ordenadas por nombre, y devuelve solo la página solicitada. Excluye
-    /// siempre las cuentas cuyo rol es de superadministración.
+    /// Busca cuentas según los criterios del filtro, ordenadas por nombre, y devuelve solo la página solicitada.
     /// </summary>
     /// <param name="filtro">Criterios de búsqueda y paginación.</param>
     /// <param name="cancelacion">Permite cancelar la consulta si la petición se abandona.</param>

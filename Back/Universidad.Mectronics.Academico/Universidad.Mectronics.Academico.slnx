@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="../Universidad.Mectronics.Transversal/Universidad.Mectronics.Transversal.csproj" />
+  <Project Path="Api.Academico/Api.Academico.csproj" />
+  <Project Path="Aplicacion.Academico/Aplicacion.Academico.csproj" />
+  <Project Path="Dominio.Academico/Dominio.Academico.csproj" />
+  <Project Path="Infraestructura.Academico/Infraestructura.Academico.csproj" />
+  <Project Path="PruebasUnitarias.Academico/PruebasUnitarias.Academico.csproj" />
+</Solution>

@@ -1,15 +1,10 @@
 namespace Universidad.Mectronics.Transversal.Paginacion;
 
-/// <summary>
-/// Página de resultados de una consulta paginada: los elementos de la página actual y los datos para navegar entre páginas.
-/// La comparten todos los microservicios para responder las consultas paginadas con la misma estructura.
-/// </summary>
+/// <summary>Página de resultados de una consulta paginada.</summary>
 /// <typeparam name="T">Tipo de los elementos de la página.</typeparam>
 public sealed record Pagina<T>
 {
-    /// <summary>
-    /// Crea la página y valida que sus datos sean coherentes.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Pagina{T}"/>.</summary>
     /// <param name="elementos">Elementos de la página actual.</param>
     /// <param name="numeroPagina">Número de la página actual, empezando en 1.</param>
     /// <param name="tamanoPagina">Cantidad máxima de elementos por página.</param>
@@ -43,8 +38,7 @@ public sealed record Pagina<T>
     public int TotalPaginas => (int)Math.Ceiling(TotalElementos / (double)TamanoPagina);
 
     /// <summary>
-    /// Crea una página con los mismos datos de navegación pero con otro tipo de elemento. Sirve para convertir,
-    /// por ejemplo, una página de entidades en una página de DTOs.
+    /// Crea una página con los mismos datos de navegación y otro tipo de elemento.
     /// </summary>
     /// <typeparam name="TDestino">Tipo de los elementos de la nueva página.</typeparam>
     /// <param name="convertir">Función que convierte cada elemento.</param>

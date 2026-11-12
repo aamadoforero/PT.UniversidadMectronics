@@ -1,0 +1,108 @@
+name: universidad-mectronics
+
+x-conexion: &conexion
+  ConnectionStrings__UniversidadMectronics: ${CADENA_CONEXION:?Defina CADENA_CONEXION en el archivo .env (vea .env.example)}
+
+services:
+  secretos:
+    image: alpine:3.20
+    volumes:
+      - secretos:/secretos
+      - ./docker/generar-secretos.sh:/generar-secretos.sh:ro
+    entrypoint: ["sh", "/generar-secretos.sh"]
+
+  logs:
+    build:
+      context: ./Back
+      args:
+        PROYECTO: Universidad.Mectronics.Logs/Api.Logs/Api.Logs.csproj
+    command: ["sh", "-c", "exec env $$(cat /secretos/logs.env) dotnet Api.Logs.dll"]
+    environment:
+      <<: *conexion
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - secretos:/secretos:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5092:8080"
+    restart: unless-stopped
+    depends_on:
+      secretos:
+        condition: service_completed_successfully
+
+  seguridad:
+    build:
+      context: ./Back
+      args:
+        PROYECTO: Universidad.Mectronics.Seguridad/Api.Seguridad/Api.Seguridad.csproj
+    command: ["sh", "-c", "exec env $$(cat /secretos/seguridad.env) dotnet Api.Seguridad.dll"]
+    environment:
+      <<: *conexion
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      Microservicios__Logs: http://logs:8080
+      Bloqueo__MinutosBloqueo: "15"
+    volumes:
+      - secretos:/secretos:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5090:8080"
+    restart: unless-stopped
+    depends_on:
+      secretos:
+        condition: service_completed_successfully
+      logs:
+        condition: service_started
+
+  academico:
+    build:
+      context: ./Back
+      args:
+        PROYECTO: Universidad.Mectronics.Academico/Api.Academico/Api.Academico.csproj
+    command: ["sh", "-c", "exec env $$(cat /secretos/academico.env) dotnet Api.Academico.dll"]
+    environment:
+      <<: *conexion
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__UrlClavesPublicas: http://seguridad:8080/.well-known/jwks.json
+      Microservicios__Logs: http://logs:8080
+    volumes:
+      - secretos:/secretos:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5091:8080"
+    restart: unless-stopped
+    depends_on:
+      seguridad:
+        condition: service_started
+
+  gateway:
+    build:
+      context: ./Back
+      args:
+        PROYECTO: Universidad.Mectronics.Gateway/Api.Gateway/Api.Gateway.csproj
+    command: ["dotnet", "Api.Gateway.dll"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ReverseProxy__Clusters__seguridad__Destinations__principal__Address: http://seguridad:8080
+      ReverseProxy__Clusters__academico__Destinations__principal__Address: http://academico:8080
+    ports:
+      - "5080:8080"
+    restart: unless-stopped
+    depends_on:
+      - seguridad
+      - academico
+
+  front:
+    build:
+      context: ./Front
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+    depends_on:
+      - gateway
+
+volumes:
+  secretos:

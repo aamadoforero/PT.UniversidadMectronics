@@ -59,14 +59,13 @@ public sealed class RepositorioUsuariosEnMemoria : IRepositorioUsuarios
     public Task<bool> ExisteIdentificacionAsync(Identificacion identificacion, int? excluirUsuarioId, CancellationToken cancelacion) =>
         Task.FromResult(Usuarios.Any(usuario => usuario.Identificacion == identificacion && usuario.Id != excluirUsuarioId));
 
-    /// <summary>Devuelve todas las cuentas sin superadministración en una página.</summary>
+    /// <summary>Devuelve todas las cuentas en una página.</summary>
     /// <param name="filtro">Criterios de paginación.</param>
     /// <param name="cancelacion">No se usa.</param>
     /// <returns>La página.</returns>
     public Task<Pagina<Usuario>> BuscarAsync(FiltroUsuariosDto filtro, CancellationToken cancelacion)
     {
-        List<Usuario> visibles = Usuarios.Where(usuario => !usuario.Rol.EsSuperAdministrador).ToList();
-        return Task.FromResult(new Pagina<Usuario>(visibles, filtro.NumeroPagina, filtro.TamanoPagina, visibles.Count));
+        return Task.FromResult(new Pagina<Usuario>(Usuarios.ToList(), filtro.NumeroPagina, filtro.TamanoPagina, Usuarios.Count));
     }
 
     /// <summary>Agrega una cuenta nueva y le asigna un identificador.</summary>

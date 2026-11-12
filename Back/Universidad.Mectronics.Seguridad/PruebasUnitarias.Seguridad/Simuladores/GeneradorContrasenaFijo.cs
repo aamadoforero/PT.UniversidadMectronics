@@ -2,9 +2,7 @@ using Aplicacion.Seguridad.Interfaces;
 
 namespace PruebasUnitarias.Seguridad.Simuladores;
 
-/// <summary>
-/// Generador de contraseñas temporales con un valor conocido, para que la prueba pueda verificar qué se entregó y guardó.
-/// </summary>
+/// <summary>Generador de contraseñas temporales con un valor conocido.</summary>
 public sealed class GeneradorContrasenaFijo : IGeneradorContrasenaTemporal
 {
     /// <summary>Contraseña temporal que siempre se genera.</summary>

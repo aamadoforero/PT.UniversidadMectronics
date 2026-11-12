@@ -10,15 +10,10 @@ using Universidad.Mectronics.Transversal.Resultados;
 namespace PruebasUnitarias.Seguridad.Aplicacion;
 
 /// <summary>
-/// Control de acceso de las cuentas: estado, rol y restablecimiento de contraseña, con las reglas de la propia cuenta y de la
-/// cuenta protegida del superadministrador.
+/// Control de acceso de las cuentas: estado y restablecimiento de contraseña, con las reglas de la propia cuenta.
 /// </summary>
 public sealed class PruebaUnitariaAccesoUsuario
 {
-    /// <summary>Cuenta del superadministrador, protegida.</summary>
-    private readonly Usuario _superAdministrador = new ConstructorUsuario().AsignarId(1).AsignarEmail("sa@universidad.edu")
-        .AsignarIdentificacion("1").AsignarRol(FabricaRoles.CrearSuperAdministrador()).MarcarContrasenaDefinitiva().Construir();
-
     /// <summary>Cuenta del administrador que hace las peticiones.</summary>
     private readonly Usuario _administrador = new ConstructorUsuario().AsignarId(2).AsignarEmail("admin@universidad.edu")
         .AsignarIdentificacion("2").AsignarRol(FabricaRoles.CrearAdministrador()).MarcarContrasenaDefinitiva().Construir();
@@ -26,19 +21,25 @@ public sealed class PruebaUnitariaAccesoUsuario
     /// <summary>Cuenta de estudiante sobre la que se opera.</summary>
     private readonly Usuario _estudiante = new ConstructorUsuario().AsignarId(3).MarcarContrasenaDefinitiva().Construir();
 
+    /// <summary>Cuenta de profesor sobre la que se opera.</summary>
+    private readonly Usuario _profesor = new ConstructorUsuario().AsignarId(4).AsignarEmail("profe@universidad.edu")
+        .AsignarIdentificacion("4").AsignarRol(FabricaRoles.CrearProfesor()).MarcarContrasenaDefinitiva().Construir();
+
+    /// <summary>Inscripciones en memoria: el estudiante tiene dos vigentes.</summary>
+    private readonly RepositorioInscripcionesEnMemoria _inscripciones;
+
     /// <summary>Servicio bajo prueba.</summary>
     private readonly ServicioAccesoUsuarios _servicio;
 
-    /// <summary>
-    /// Arma el servicio con el administrador autenticado.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="PruebaUnitariaAccesoUsuario"/>.</summary>
     public PruebaUnitariaAccesoUsuario()
     {
-        RepositorioUsuariosEnMemoria repositorio = new RepositorioUsuariosEnMemoria().Sembrar(_superAdministrador, _administrador, _estudiante);
+        _inscripciones = new RepositorioInscripcionesEnMemoria().Sembrar(_estudiante.PerfilEstudiante!.Id, 2);
+        RepositorioUsuariosEnMemoria repositorio = new RepositorioUsuariosEnMemoria().Sembrar(_administrador, _estudiante, _profesor);
         _servicio = new ServicioAccesoUsuarios(
-            new AutorizadorUsuarios(new UsuarioActualFalso().Autenticar(_administrador)), repositorio, new RepositorioRolesEnMemoria(),
+            new AutorizadorUsuarios(new UsuarioActualFalso().Autenticar(_administrador)), repositorio, _inscripciones,
             new UnidadTrabajoFalsa(), new ServicioHashFalso(), new GeneradorContrasenaFijo(), new RelojFijo(), new RegistroEventosFalso(),
-            new ValidadorCambiarRol(), new ValidadorCambiarEstado());
+            new ValidadorCambiarEstado());
     }
 
     /// <summary>
@@ -55,42 +56,46 @@ public sealed class PruebaUnitariaAccesoUsuario
     }
 
     /// <summary>
-    /// La cuenta del superadministrador está protegida y se informa como inexistente.
+    /// Desactivar una cuenta de estudiante la deja inactiva y cancela sus inscripciones vigentes.
     /// </summary>
     /// <returns>Una tarea que termina con la verificación.</returns>
     [Fact]
-    public async Task CambiarEstadoDelSuperAdministradorDevuelveNoEncontrado()
-    {
-        Resultado<UsuarioDetalleDto> resultado = await _servicio.CambiarEstadoAsync(_superAdministrador.Id, new(false), CancellationToken.None);
-
-        Assert.Equal(TipoError.NoEncontrado, resultado.Error.Tipo);
-        Assert.True(_superAdministrador.Activo);
-    }
-
-    /// <summary>
-    /// Desactivar una cuenta de estudiante la deja inactiva.
-    /// </summary>
-    /// <returns>Una tarea que termina con la verificación.</returns>
-    [Fact]
-    public async Task CambiarEstadoDeUnEstudianteLoDesactiva()
+    public async Task CambiarEstadoDeUnEstudianteLoDesactivaYCancelaSusInscripciones()
     {
         Resultado<UsuarioDetalleDto> resultado = await _servicio.CambiarEstadoAsync(_estudiante.Id, new(false), CancellationToken.None);
 
         Assert.False(resultado.Valor.Activo);
         Assert.False(_estudiante.PuedeIniciarSesion(FechasPrueba.Inicio));
+        Assert.All(_inscripciones.Inscripciones, inscripcion => Assert.False(inscripcion.Activo));
+        Assert.All(_inscripciones.Inscripciones, inscripcion => Assert.Equal(FechasPrueba.Inicio, inscripcion.FechaModificacion));
     }
 
     /// <summary>
-    /// No se puede cambiar de un rol con perfil de estudiante a uno con perfil de profesor.
+    /// Desactivar una cuenta sin perfil de estudiante no toca inscripciones.
     /// </summary>
     /// <returns>Una tarea que termina con la verificación.</returns>
     [Fact]
-    public async Task CambiarRolDeEstudianteAProfesorDevuelveCambioRolNoPermitido()
+    public async Task CambiarEstadoDeUnProfesorNoCancelaInscripciones()
     {
-        Resultado<UsuarioDetalleDto> resultado = await _servicio.CambiarRolAsync(_estudiante.Id, new(FabricaRoles.IdProfesor), CancellationToken.None);
+        Resultado<UsuarioDetalleDto> resultado = await _servicio.CambiarEstadoAsync(_profesor.Id, new(false), CancellationToken.None);
 
-        Assert.Equal("Usuario.CambioRolNoPermitido", resultado.Error.Codigo);
-        Assert.Equal("Estudiante", _estudiante.Rol.Nombre);
+        Assert.False(resultado.Valor.Activo);
+        Assert.All(_inscripciones.Inscripciones, inscripcion => Assert.True(inscripcion.Activo));
+    }
+
+    /// <summary>
+    /// Reactivar un estudiante no restaura las inscripciones canceladas al desactivarlo.
+    /// </summary>
+    /// <returns>Una tarea que termina con la verificación.</returns>
+    [Fact]
+    public async Task CambiarEstadoAlReactivarUnEstudianteNoRestauraSusInscripciones()
+    {
+        await _servicio.CambiarEstadoAsync(_estudiante.Id, new(false), CancellationToken.None);
+
+        Resultado<UsuarioDetalleDto> resultado = await _servicio.CambiarEstadoAsync(_estudiante.Id, new(true), CancellationToken.None);
+
+        Assert.True(resultado.Valor.Activo);
+        Assert.All(_inscripciones.Inscripciones, inscripcion => Assert.False(inscripcion.Activo));
     }
 
     /// <summary>

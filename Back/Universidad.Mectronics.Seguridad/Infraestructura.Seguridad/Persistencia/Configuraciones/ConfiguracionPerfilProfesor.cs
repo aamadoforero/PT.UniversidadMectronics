@@ -25,5 +25,11 @@ internal sealed class ConfiguracionPerfilProfesor : IEntityTypeConfiguration<Per
 
         builder.HasIndex(perfil => perfil.UsuarioId).IsUnique().HasDatabaseName("UQ_Profesor_UsuarioId");
         builder.HasIndex(perfil => perfil.CategoriaId).HasDatabaseName("IX_Profesor_CategoriaId");
+
+        builder.HasOne(perfil => perfil.Categoria)
+            .WithMany()
+            .HasForeignKey(perfil => perfil.CategoriaId)
+            .HasConstraintName("FK_Profesor_CategoriaProfesor");
+        builder.Navigation(perfil => perfil.Categoria).AutoInclude();
     }
 }

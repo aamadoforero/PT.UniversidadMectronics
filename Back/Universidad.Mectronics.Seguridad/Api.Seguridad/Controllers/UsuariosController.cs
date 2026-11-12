@@ -8,10 +8,7 @@ using Universidad.Mectronics.Transversal.Resultados;
 
 namespace Api.Seguridad.Controllers;
 
-/// <summary>
-/// Administración de cuentas (<c>/api/seguridad/usuarios</c>). Cada acción exige su permiso; los servicios lo verifican de
-/// nuevo y aplican las reglas de alcance (por ejemplo, la cuenta protegida del superadministrador).
-/// </summary>
+/// <summary>Administración de cuentas. Cada acción exige su permiso.</summary>
 /// <param name="consulta">Caso de uso de consulta de cuentas.</param>
 /// <param name="registro">Caso de uso de creación y edición de cuentas.</param>
 /// <param name="acceso">Caso de uso de rol, estado y contraseña de las cuentas.</param>
@@ -23,7 +20,7 @@ public sealed class UsuariosController(
     IServicioAccesoUsuarios acceso) : SeguridadControllerBase
 {
     /// <summary>
-    /// Busca cuentas con filtros opcionales y paginación, ordenadas por nombre. Nunca incluye la cuenta del superadministrador.
+    /// Busca cuentas con filtros opcionales y paginación, ordenadas por nombre.
     /// </summary>
     /// <param name="criterios">Filtros por query string: texto, rolId, activo, numeroPagina (desde 1) y tamanoPagina (1 a 100).</param>
     /// <param name="cancelacion">Cancelación de la petición.</param>
@@ -85,24 +82,8 @@ public sealed class UsuariosController(
         ConvertirARespuesta(await registro.ActualizarAsync(id, datos, cancelacion));
 
     /// <summary>
-    /// Cambia el rol de una cuenta hacia otro con el mismo tipo de perfil.
-    /// </summary>
-    /// <param name="id">Identificador de la cuenta.</param>
-    /// <param name="datos">Rol nuevo.</param>
-    /// <param name="cancelacion">Cancelación de la petición.</param>
-    /// <returns>200 con la cuenta actualizada; 400, 403, 404 o 409 si no se puede cambiar.</returns>
-    [HttpPut("{id:int}/rol")]
-    [Authorize(Policy = CodigosPermisoUsuarios.CambiarRol)]
-    [ProducesResponseType<UsuarioDetalleDto>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> CambiarRolAsync(int id, CambiarRolDto datos, CancellationToken cancelacion) =>
-        ConvertirARespuesta(await acceso.CambiarRolAsync(id, datos, cancelacion));
-
-    /// <summary>
-    /// Activa o desactiva una cuenta. Una cuenta desactivada pierde el acceso en la petición siguiente.
+    /// Activa o desactiva una cuenta. Una cuenta desactivada pierde el acceso en la petición siguiente; si es un
+    /// estudiante, se cancelan sus inscripciones vigentes.
     /// </summary>
     /// <param name="id">Identificador de la cuenta.</param>
     /// <param name="datos">Estado nuevo.</param>

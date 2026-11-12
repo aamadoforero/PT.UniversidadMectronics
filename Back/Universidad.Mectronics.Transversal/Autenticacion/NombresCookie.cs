@@ -1,9 +1,6 @@
 namespace Universidad.Mectronics.Transversal.Autenticacion;
 
-/// <summary>
-/// Nombres de las cookies de sesión. Seguridad las escribe y todos los microservicios leen la de acceso, así que deben
-/// coincidir en ambos lados.
-/// </summary>
+/// <summary>Nombres de las cookies de sesión.</summary>
 public static class NombresCookie
 {
     /// <summary>Token de acceso. Es <c>HttpOnly</c>: JavaScript no puede leerla, lo que la protege de ataques XSS.</summary>

@@ -7,14 +7,12 @@ using Dominio.Seguridad.ObjetosValor;
 using Dominio.Seguridad.Politicas;
 using FluentValidation;
 using FluentValidation.Results;
+using Universidad.Mectronics.Transversal.Auditoria;
 using Universidad.Mectronics.Transversal.Resultados;
 
 namespace Aplicacion.Seguridad.Servicios.Autenticacion;
 
-/// <summary>
-/// Implementación de los casos de uso de inicio y renovación de sesión. Orquesta: valida la entrada, consulta la cuenta,
-/// delega las reglas al dominio (bloqueo, estado) y a las interfaces lo técnico (hash, tokens, auditoría).
-/// </summary>
+/// <summary>Implementación del inicio y la renovación de sesión.</summary>
 /// <param name="repositorioUsuarios">Acceso a las cuentas.</param>
 /// <param name="unidadTrabajo">Guarda los intentos fallidos y el reinicio del bloqueo.</param>
 /// <param name="servicioHash">Verifica las contraseñas.</param>
@@ -40,7 +38,7 @@ public sealed class ServicioAutenticacion(
     /// </summary>
     /// <param name="datos">Correo y contraseña escritos por el usuario.</param>
     /// <param name="cancelacion">Permite cancelar la operación si la petición se abandona.</param>
-    /// <returns>La sesión creada, o un error de validación o de credenciales inválidas.</returns>
+    /// <returns>La sesión creada, o un error de validación, de credenciales inválidas o de cuenta bloqueada.</returns>
     public async Task<Resultado<SesionCreadaDto>> IniciarSesionAsync(IniciarSesionDto datos, CancellationToken cancelacion)
     {
         ArgumentNullException.ThrowIfNull(datos);
@@ -56,15 +54,24 @@ public sealed class ServicioAutenticacion(
         DateTimeOffset ahora = reloj.AhoraUtc;
         Usuario? usuario = await repositorioUsuarios.ObtenerPorEmailAsync(email, cancelacion);
 
-        if (usuario is null || !usuario.PuedeIniciarSesion(ahora))
+        if (usuario is null || !usuario.Activo)
         {
             servicioHash.Verificar(servicioHash.HashReferencia, contrasena);
             await registroEventos.RegistrarAdvertenciaAsync(
                 usuario is null
                     ? "Inicio de sesión rechazado: el correo no está registrado."
-                    : $"Inicio de sesión rechazado: la cuenta {usuario.Id} está inactiva o bloqueada.",
+                    : $"Inicio de sesión rechazado: la cuenta {usuario.Id} está inactiva.",
                 cancelacion);
             return ErroresAutenticacion.CrearCredencialesInvalidas();
+        }
+
+        if (usuario.EstaBloqueado(ahora))
+        {
+            servicioHash.Verificar(servicioHash.HashReferencia, contrasena);
+            await registroEventos.RegistrarAdvertenciaAsync(
+                $"Inicio de sesión rechazado: la cuenta {usuario.Id} está bloqueada hasta {usuario.BloqueoHasta:O}.",
+                cancelacion);
+            return ErroresAutenticacion.CrearCuentaBloqueada(politicaBloqueo.DuracionBloqueo);
         }
 
         if (!servicioHash.Verificar(usuario.Contrasena, contrasena))

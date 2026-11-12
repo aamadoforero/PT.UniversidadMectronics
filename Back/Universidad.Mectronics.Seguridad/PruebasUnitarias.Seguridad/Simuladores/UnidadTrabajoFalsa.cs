@@ -3,9 +3,7 @@ using Aplicacion.Seguridad.Interfaces;
 
 namespace PruebasUnitarias.Seguridad.Simuladores;
 
-/// <summary>
-/// Unidad de trabajo simulada: cuenta cuántas veces se guardó para que la prueba verifique que el caso de uso persistió.
-/// </summary>
+/// <summary>Unidad de trabajo simulada que cuenta cuántas veces se guardó.</summary>
 public sealed class UnidadTrabajoFalsa : IUnidadTrabajo
 {
     /// <summary>Cantidad de veces que se llamó a <see cref="GuardarCambiosAsync"/>.</summary>

@@ -8,9 +8,6 @@ namespace PruebasUnitarias.Seguridad.DatosMemoria;
 /// </summary>
 public static class FabricaRoles
 {
-    /// <summary>Identificador del rol SuperAdministrador.</summary>
-    public const byte IdSuperAdministrador = 1;
-
     /// <summary>Identificador del rol Administrador.</summary>
     public const byte IdAdministrador = 2;
 
@@ -21,17 +18,11 @@ public static class FabricaRoles
     public const byte IdEstudiante = 4;
 
     /// <summary>
-    /// Crea el rol SuperAdministrador con todos los permisos, incluido el de acceso total.
-    /// </summary>
-    /// <returns>El rol.</returns>
-    public static Rol CrearSuperAdministrador() => CrearRol(IdSuperAdministrador, "SuperAdministrador", TipoPerfil.Ninguno, CodigosPermiso.Todos);
-
-    /// <summary>
-    /// Crea el rol Administrador con todos los permisos de cuentas, sin el de acceso total.
+    /// Crea el rol Administrador con todos los permisos de cuentas.
     /// </summary>
     /// <returns>El rol.</returns>
     public static Rol CrearAdministrador() => CrearRol(IdAdministrador, "Administrador", TipoPerfil.Ninguno,
-        CodigosPermiso.Todos.Where(codigo => codigo != CodigosPermisoSuperAdministradores.Gestionar));
+        CodigosPermiso.Todos);
 
     /// <summary>
     /// Crea el rol Profesor, sin permisos de administración.
@@ -46,11 +37,11 @@ public static class FabricaRoles
     public static Rol CrearEstudiante() => CrearRol(IdEstudiante, "Estudiante", TipoPerfil.Estudiante, ["inscripciones.propias", "inscripciones.consultar"]);
 
     /// <summary>
-    /// Crea los cuatro roles de prueba.
+    /// Crea los tres roles de prueba.
     /// </summary>
     /// <returns>Los roles.</returns>
     public static IReadOnlyList<Rol> CrearTodos() =>
-        [CrearSuperAdministrador(), CrearAdministrador(), CrearProfesor(), CrearEstudiante()];
+        [CrearAdministrador(), CrearProfesor(), CrearEstudiante()];
 
     /// <summary>
     /// Crea un rol con su identificador y sus permisos.

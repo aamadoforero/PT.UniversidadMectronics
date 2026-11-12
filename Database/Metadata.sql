@@ -1,9 +1,3 @@
-/* =====================================================================
-   Universidad Mectronics - Metadata
-   Documenta tablas y columnas con la propiedad extendida MS_Description.
-   Ejecutar después de DDL.sql. Es idempotente.
-   ===================================================================== */
-
 USE UniversidadMectronics;
 GO
 
@@ -116,7 +110,7 @@ EXEC dbo.sp_DocumentarTabla 'Academico', 'Profesor', 'CategoriaId', N'Categoría
 EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', NULL, N'Asignaturas de un programa. Cada materia la dicta un profesor y cada profesor dicta como máximo 2 materias (regla validada en la aplicación).';
 EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Id', N'Identificador único de la materia (PK).';
 EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Nombre', N'Nombre de la asignatura, único dentro del programa.';
-EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Creditos', N'Créditos académicos de la materia (por defecto 3).';
+EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Creditos', N'Créditos académicos de la materia; la restricción CK_Materia_Creditos exige exactamente 3.';
 EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'ProgramaId', N'Programa al que pertenece la materia (FK a Academico.Programa).';
 EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'ProfesorId', N'Profesor que dicta la materia (FK a Academico.Profesor).';
 EXEC dbo.sp_DocumentarTabla 'Academico', 'Materia', 'Activo', N'Estado de la materia (1 = Disponible para inscripción, 0 = Inactiva).';

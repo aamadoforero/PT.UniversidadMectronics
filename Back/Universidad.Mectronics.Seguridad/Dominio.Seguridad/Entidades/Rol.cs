@@ -4,27 +4,24 @@ using Dominio.Seguridad.Excepciones;
 namespace Dominio.Seguridad.Entidades;
 
 /// <summary>
-/// Rol de autorización (tabla <c>Seguridad.Rol</c>). Cada usuario tiene exactamente un rol y el código nunca depende de su nombre:
-/// sus permisos definen lo que puede hacer y su <see cref="TipoPerfil"/> los datos académicos que exige.
-/// Así, un rol nuevo se crea solo con datos, sin cambiar código.
+/// Rol de autorización. Sus permisos definen lo que puede hacer y su <see cref="TipoPerfil"/> los datos académicos que
+/// exige.
 /// </summary>
 public sealed class Rol
 {
     /// <summary>Longitud máxima del nombre (columna <c>NVARCHAR(50)</c>).</summary>
     public const int LongitudMaximaNombre = 50;
 
-    /// <summary>Permisos asignados. Entity Framework la llena a través de este campo.</summary>
+    /// <summary>Permisos asignados al rol.</summary>
     private readonly List<Permiso> _permisos = [];
 
-    /// <summary>Constructor requerido por Entity Framework para materializar el registro.</summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Rol"/>.</summary>
     private Rol()
     {
         Nombre = string.Empty;
     }
 
-    /// <summary>
-    /// Crea un rol sin permisos.
-    /// </summary>
+    /// <summary>Inicializa una nueva instancia de la clase <see cref="Rol"/>.</summary>
     /// <param name="nombre">Nombre único del rol. Se quitan los espacios de los extremos.</param>
     /// <param name="tipoPerfil">Datos académicos que exigirán sus cuentas. Por defecto, ninguno.</param>
     public Rol(string nombre, TipoPerfil tipoPerfil = TipoPerfil.Ninguno)
@@ -46,15 +43,14 @@ public sealed class Rol
         TipoPerfil = tipoPerfil;
     }
 
-    /// <summary>Identificador generado por la base de datos (PK).</summary>
+    /// <summary>Identificador.</summary>
     public byte Id { get; private set; }
 
     /// <summary>Nombre único del rol. Es informativo: ninguna regla depende de él.</summary>
     public string Nombre { get; private set; }
 
     /// <summary>
-    /// Datos académicos que exigen las cuentas con este rol. No tiene método para cambiarlo: si un rol con usuarios
-    /// cambiara de tipo, sus cuentas quedarían con un perfil académico que no corresponde.
+    /// Datos académicos que exigen las cuentas con este rol. No se puede cambiar.
     /// </summary>
     public TipoPerfil TipoPerfil { get; private set; }
 
@@ -63,13 +59,6 @@ public sealed class Rol
 
     /// <summary>Indica si las cuentas con este rol llevan datos académicos (estudiante o profesor).</summary>
     public bool TienePerfilAcademico => TipoPerfil != TipoPerfil.Ninguno;
-
-    /// <summary>
-    /// Indica si el rol es de superadministración, es decir, si tiene el permiso de acceso total,
-    /// sin importar cómo se llame. El sistema tiene una única cuenta con este rol, creada por el script: está protegida y el rol
-    /// no se asigna desde la aplicación.
-    /// </summary>
-    public bool EsSuperAdministrador => TienePermiso(CodigosPermisoSuperAdministradores.Gestionar);
 
     /// <summary>
     /// Indica si el rol tiene el permiso indicado.
